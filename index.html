@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a56db">
 <title>نظام حضور المندوبين</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--p:#1a56db;--pd:#1e429f;--pl:#eff6ff;--s:#057a55;--sl:#d1fae5;--d:#e02424;--dl:#fee2e2;--w:#c27803;--wl:#fef3c7;--bg:#f3f4f6;--card:#fff;--txt:#111827;--mu:#6b7280;--bdr:#e5e7eb;--r:14px;--sh:0 4px 24px rgba(0,0,0,.09);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -112,7 +112,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 .pb{background:#fffbeb;border:2px solid #f59e0b;border-radius:10px;padding:12px 16px;margin:10px 14px 0;font-size:14px;color:#92400e;display:none;align-items:center;gap:8px;}
 .empty{text-align:center;padding:40px 20px;color:var(--mu);}
 .ei{font-size:46px;margin-bottom:10px;}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 24px;border-radius:50px;font-size:14px;font-weight:600;z-index:9999;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 24px;border-radius:50px;font-size:14px;font-weight:600;z-index:9999;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3);}.mapbox{height:280px;border-radius:14px;overflow:hidden;border:2px solid var(--bdr);margin:12px 0;background:#e5e7eb}.leaflet-container{font-family:inherit;z-index:1}
 .ib2{background:var(--pl);border-radius:10px;padding:12px 14px;font-size:13px;color:#1e40af;margin-bottom:14px;border-right:3px solid var(--p);}
 .sec-bdg{display:inline-flex;align-items:center;gap:5px;background:var(--sl);color:#065f46;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin-top:8px;}
 </style>
@@ -261,11 +261,11 @@ input[type=range]{flex:1;accent-color:var(--p);}
     </div>
     <div class="fg">
       <label>نطاق السماح بالتسجيل</label>
-      <div class="rw"><span style="font-size:13px;color:var(--mu)">25م</span><input type="range" id="rslider" min="25" max="500" step="25" value="100" oninput="document.getElementById('rv').textContent=this.value+' م'"><span style="font-size:13px;color:var(--mu)">500م</span></div>
+      <div class="rw"><span style="font-size:13px;color:var(--mu)">25م</span><input type="range" id="rslider" min="25" max="500" step="25" value="100" oninput="document.getElementById('rv').textContent=this.value+' م';if(warehouseCircle)warehouseCircle.setRadius(parseInt(this.value))"><span style="font-size:13px;color:var(--mu)">500م</span></div>
       <div style="text-align:center;margin-top:8px"><span class="rv" id="rv">100 م</span></div>
     </div>
     <div class="fg">
-      <label>تحديد الموقع</label>
+      <label>تحديد الموقع من الخريطة</label><div id="warehouseMap" class="mapbox"></div><div class="ht">اضغط على الخريطة لاختيار موقع المخزن، أو استخدم موقعك الحالي.</div>
       <button class="btn bp bb" onclick="useMyLoc()" style="margin-bottom:10px">📍 استخدام موقعي الحالي كموقع المخزن</button>
       <div style="text-align:center;font-size:13px;color:var(--mu);margin:8px 0">أو أدخل الإحداثيات يدوياً</div>
       <div style="display:flex;gap:8px"><input type="number" id="mlat" placeholder="خط العرض (Lat)" step="0.000001"><input type="number" id="mlng" placeholder="خط الطول (Lng)" step="0.000001"></div>
@@ -319,7 +319,7 @@ function openM(id){$(id).classList.add('open');}
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 function hideLd(){$('LS').classList.add('hide');setTimeout(()=>$('LS').style.display='none',400);}
 
-let CU=null,allU=[],allA=[],myL=null,locOk=false,openR=null,clkInt=null,wid=null,aU=null,nU=null,agTab='active';
+let CU=null,allU=[],allA=[],myL=null,locOk=false,openR=null,clkInt=null,wid=null,aU=null,nU=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
 
 async function init(){
   try{
@@ -429,8 +429,9 @@ async function updBtn(){
 window.doCheck=async()=>{
   const btn=$('mainBtn');btn.disabled=true;
   try{
+    if(!locOk){toast('❌ يجب أن تكون داخل نطاق المخزن لتسجيل الدخول أو الخروج');btn.disabled=false;return;}
     const now=new Date().toISOString();
-    if(!openR){if(!locOk){toast('❌ يجب أن تكون داخل نطاق المخزن');btn.disabled=false;return;}
+    if(!openR){
       await addDoc(collection(db,'attendance'),{agentId:CU.id,agentName:CU.name,username:CU.username,date:dStr(),checkinTime:now,checkoutTime:null,duration:null,checkinLat:myL?.lat||null,checkinLng:myL?.lng||null,checkoutLat:null,checkoutLng:null,deviceId:getDid()});
       toast('✅ تم تسجيل الدخول');
     }else{
@@ -475,7 +476,7 @@ async function chkLoc(){
 
 function setLP(t,tx){const p=$('lpill');p.className='lpill '+t;$('ltxt').textContent=tx;}
 
-function initAdmin(){loadAllU();subAtt();subN();loadWH();setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
+function initAdmin(){loadAllU();subAtt();subN();loadWH();setTimeout(initWarehouseMap,150);setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
 
 async function loadAllU(){
   const sn=await getDocs(collection(db,'users'));allU=sn.docs.map(d=>({id:d.id,...d.data()}));refDash();renderAgs();updPB();
@@ -574,14 +575,32 @@ function renderN(ns){
 async function markNR(){const q=query(collection(db,'notifications'),where('read','==',false));const sn=await getDocs(q);const b=writeBatch(db);sn.docs.forEach(d=>b.update(d.ref,{read:true}));if(sn.docs.length)await b.commit();}
 window.clearNotifs=async()=>{const sn=await getDocs(collection(db,'notifications'));const b=writeBatch(db);sn.docs.forEach(d=>b.delete(d.ref));await b.commit();toast('🗑 تم مسح الإشعارات');};
 
+function initWarehouseMap(){
+  if(!window.L||warehouseMap||!$('warehouseMap'))return;
+  warehouseMap=L.map('warehouseMap').setView([33.3152,44.3661],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(warehouseMap);
+  warehouseMap.on('click',e=>setWarehousePoint(e.latlng.lat,e.latlng.lng));
+  setTimeout(()=>warehouseMap.invalidateSize(),100);
+}
+function setWarehousePoint(lat,lng){
+  if(!warehouseMap)return;
+  const radius=parseInt($('rslider')?.value||100);
+  if(warehouseMarker)warehouseMap.removeLayer(warehouseMarker);
+  if(warehouseCircle)warehouseMap.removeLayer(warehouseCircle);
+  warehouseMarker=L.marker([lat,lng]).addTo(warehouseMap).bindPopup('موقع المخزن').openPopup();
+  warehouseCircle=L.circle([lat,lng],{radius,color:'#1a56db',fillColor:'#1a56db',fillOpacity:.16}).addTo(warehouseMap);
+  warehouseMap.setView([lat,lng],16);
+  $('mlat').value=lat.toFixed(6);$('mlng').value=lng.toFixed(6);
+  $('lprev').style.display='block';$('lprev').textContent=`📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} — النطاق: ${radius}م`;
+}
 async function loadWH(){
-  try{const sn=await getDoc(doc(db,'settings','warehouse'));if(sn.exists()){const w=sn.data();$('whD').textContent=`${w.lat?.toFixed(6)||'?'}, ${w.lng?.toFixed(6)||'?'} — النطاق: ${w.radius||100} م`;$('rslider').value=w.radius||100;$('rv').textContent=(w.radius||100)+' م';if(w.lat){$('mlat').value=w.lat.toFixed(6);$('mlng').value=w.lng.toFixed(6);}}else{$('whD').textContent='لم يُحدد بعد';}}catch(e){}
+  try{const sn=await getDoc(doc(db,'settings','warehouse'));if(sn.exists()){const w=sn.data();$('whD').textContent=`${w.lat?.toFixed(6)||'?'}, ${w.lng?.toFixed(6)||'?'} — النطاق: ${w.radius||100} م`;$('rslider').value=w.radius||100;$('rv').textContent=(w.radius||100)+' م';if(w.lat){$('mlat').value=w.lat.toFixed(6);$('mlng').value=w.lng.toFixed(6);setWarehousePoint(w.lat,w.lng);}}else{$('whD').textContent='لم يُحدد بعد';}}catch(e){}
 }
 window.useMyLoc=()=>{
   if(!navigator.geolocation){toast('GPS غير مدعوم');return;}toast('⏳ جاري تحديد موقعك...');
-  navigator.geolocation.getCurrentPosition(pos=>{$('mlat').value=pos.coords.latitude.toFixed(6);$('mlng').value=pos.coords.longitude.toFixed(6);$('lprev').style.display='block';$('lprev').textContent=`📍 ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} — دقة: ${Math.round(pos.coords.accuracy)}م`;toast('✅ تم تحديد موقعك');},()=>toast('❌ تعذّر تحديد الموقع'));
+  navigator.geolocation.getCurrentPosition(pos=>{setWarehousePoint(pos.coords.latitude,pos.coords.longitude);$('lprev').textContent=`📍 ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} — دقة: ${Math.round(pos.coords.accuracy)}م`;toast('✅ تم تحديد موقعك');},()=>toast('❌ تعذّر تحديد الموقع'));
 };
-window.saveWH=async()=>{const lat=parseFloat($('mlat').value),lng=parseFloat($('mlng').value),r=parseInt($('rslider').value);if(isNaN(lat)||isNaN(lng)){toast('⚠️ أدخل إحداثيات صحيحة');return;}await setDoc(doc(db,'settings','warehouse'),{lat,lng,radius:r});$('whD').textContent=`${lat.toFixed(6)}, ${lng.toFixed(6)} — النطاق: ${r} م`;toast('✅ تم حفظ إعدادات المخزن');};
+window.saveWH=async()=>{const lat=parseFloat($('mlat').value),lng=parseFloat($('mlng').value),r=parseInt($('rslider').value);if(isNaN(lat)||isNaN(lng)){toast('⚠️ أدخل إحداثيات صحيحة');return;}await setDoc(doc(db,'settings','warehouse'),{lat,lng,radius:r,updatedAt:new Date().toISOString()});setWarehousePoint(lat,lng);$('whD').textContent=`${lat.toFixed(6)}, ${lng.toFixed(6)} — النطاق: ${r} م`;toast('✅ تم حفظ إعدادات المخزن');};
 window.chAdmPw=async()=>{const np=$('napw').value;if(!np||np.length<6){toast('⚠️ 6 أحرف على الأقل');return;}await updateDoc(doc(db,'users','__admin__'),{password:await sha(np)});$('napw').value='';toast('✅ تم تغيير كلمة المرور');};
 
 init();
