@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">حضور المندوبين</string>
+    <string name="title_activity_main">حضور المندوبين</string>
+    <string name="package_name">com.deliveryattendance.app</string>
+    <string name="custom_url_scheme">com.deliveryattendance.app</string>
+</resources>
