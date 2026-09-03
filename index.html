@@ -338,8 +338,9 @@ async function init(){
 
 async function ensureAdmin(){
   try{
-    const sn=await getDoc(doc(db,'users','__admin__'));
-    if(!sn.exists()){const pw=await sha('20203030');await setDoc(doc(db,'users','__admin__'),{username:'rasim1010',password:pw,name:'الأدمن',role:'admin',status:'active',createdAt:new Date().toISOString(),deviceId:null,hasAlert:false});}
+    const q=query(collection(db,'users'),where('username','==','rasim1010'));
+    const sn=await getDocs(q);
+    if(sn.empty){const pw=await sha('20203030');await addDoc(collection(db,'users'),{username:'rasim1010',password:pw,name:'الأدمن',role:'admin',status:'active',createdAt:new Date().toISOString(),deviceId:null,hasAlert:false});}
   }catch(e){console.error(e);}
 }
 
@@ -358,7 +359,7 @@ window.doLogin=async()=>{
     const q=query(collection(db,'users'),where('username','==',u));
     const sn=await getDocs(q);
     if(sn.empty){sErr('lerr','اسم المستخدم غير موجود');btn.disabled=false;btn.innerHTML='دخول';return;}
-    const ud=sn.docs[0];const usr={id:ud.id,...ud.data()};
+    const ud=sn.docs.find(d=>d.data().role==='admin')||sn.docs[0];const usr={id:ud.id,...ud.data()};
     if(usr.password!==pw){sErr('lerr','كلمة المرور غير صحيحة');btn.disabled=false;btn.innerHTML='دخول';return;}
     if(usr.status==='pending'){sErr('lerr','حسابك بانتظار موافقة الأدمن');btn.disabled=false;btn.innerHTML='دخول';return;}
     if(usr.status==='blocked'){sErr('lerr','حسابك محظور — تواصل مع الأدمن');btn.disabled=false;btn.innerHTML='دخول';return;}
@@ -602,7 +603,7 @@ window.useMyLoc=()=>{
   navigator.geolocation.getCurrentPosition(pos=>{setWarehousePoint(pos.coords.latitude,pos.coords.longitude);$('lprev').textContent=`📍 ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} — دقة: ${Math.round(pos.coords.accuracy)}م`;toast('✅ تم تحديد موقعك');},()=>toast('❌ تعذّر تحديد الموقع'));
 };
 window.saveWH=async()=>{const lat=parseFloat($('mlat').value),lng=parseFloat($('mlng').value),r=parseInt($('rslider').value);if(isNaN(lat)||isNaN(lng)){toast('⚠️ أدخل إحداثيات صحيحة');return;}await setDoc(doc(db,'settings','warehouse'),{lat,lng,radius:r,updatedAt:new Date().toISOString()});setWarehousePoint(lat,lng);$('whD').textContent=`${lat.toFixed(6)}, ${lng.toFixed(6)} — النطاق: ${r} م`;toast('✅ تم حفظ إعدادات المخزن');};
-window.chAdmPw=async()=>{const np=$('napw').value;if(!np||np.length<6){toast('⚠️ 6 أحرف على الأقل');return;}await updateDoc(doc(db,'users','__admin__'),{password:await sha(np)});$('napw').value='';toast('✅ تم تغيير كلمة المرور');};
+window.chAdmPw=async()=>{const np=$('napw').value;if(!np||np.length<6){toast('⚠️ 6 أحرف على الأقل');return;}if(!CU?.id){toast('⚠️ سجّل الدخول أولاً');return;}await updateDoc(doc(db,'users',CU.id),{password:await sha(np)});$('napw').value='';toast('✅ تم تغيير كلمة المرور');};
 
 init();
 </script>
