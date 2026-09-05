@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isActive() {
+      return signedIn() && myProfile().status == 'active';
+    }
+    function isAdmin() {
+      return isActive() && myProfile().role == 'admin';
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if false;
+      allow update: if isAdmin() || (
+        isActive() && request.auth.uid == uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['activeSessionId', 'lastLogoutAt'])
+      );
+      allow delete: if false;
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAdmin() || (isActive() && resource.data.agentId == request.auth.uid);
+      allow create, delete: if false;
+      allow update: if isAdmin();
+    }
+
+    match /openAttendance/{uid} {
+      allow read: if isAdmin() || (isActive() && request.auth.uid == uid);
+      allow write: if false;
+    }
+
+    match /settings/{settingId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /leaves/{leaveId} {
+      allow read: if isAdmin() || (isActive() && resource.data.agentId == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /usernames/{username} {
+      allow read, write: if false;
+    }
+
+    match /loginAttempts/{attemptId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

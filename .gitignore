@@ -1,0 +1,13 @@
+node_modules/
+.secrets/
+admin-auth-request.json
+SIGNING_CREDENTIALS.md
+test-server.cjs
+android/app/release-key.jks
+android/app/keystore.properties
+android/.gradle/
+android/app/build/
+android/build/
+*.log
+.vercel
+.env*

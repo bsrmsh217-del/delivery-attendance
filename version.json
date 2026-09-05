@@ -1,0 +1,8 @@
+{
+  "version": "2.0.2",
+  "versionCode": 22,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
+  "notes": "إخفاء تحديث APK من الويب، تصحيح تمييز الأدمن والمندوب، وإصلاح ظهور طلبات الحساب في لوحة الموافقة.",
+  "required": false,
+  "publishedAt": "2026-09-05T00:00:00+03:00"
+}

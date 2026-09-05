@@ -1,0 +1,15 @@
+.git/
+.github/
+.secrets/
+.vercel/
+node_modules/
+android/
+www/
+scripts/
+admin-auth-request.json
+SIGNING_CREDENTIALS.md
+test-server.cjs
+QA_NOTES.md
+README_AR.md
+*.zip
+delivery-attendance-debug.apk
