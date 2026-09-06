@@ -289,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.8', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.9', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -500,7 +500,7 @@ window.gotoSec=name=>{
   $('sec_'+name).classList.add('active');
   const order=['dashboard','attendance','agents','notifications','location','management'];
   const btns=document.querySelectorAll('.nb');const i=order.indexOf(name);if(i>=0&&btns[i])btns[i].classList.add('active');
-  if(name==='notifications')markNR();if(name==='agents'){loadAllU();renderAgs();}if(name==='management')loadManagement();if(name==='location')setTimeout(()=>warehouseMap?.invalidateSize(),100);
+  if(name==='notifications')markNR();if(name==='agents'){loadAllU();renderAgs();}if(name==='management')loadManagement();if(name==='location')setTimeout(()=>{Object.values(branchMapState).forEach(x=>{x.map.invalidateSize(true);x.map.setView([x.lat,x.lng],15,{animate:false});});},250);
 };
 
 window.filterAtt=()=>{
