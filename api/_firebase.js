@@ -1,5 +1,17 @@
 const admin = require('firebase-admin');
 
+function handleCors(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return true;
+  }
+  return false;
+}
+
 function getApp() {
   if (admin.apps.length) return admin.app();
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -67,4 +79,4 @@ function sendError(res, error) {
   res.status(status).json({ ok: false, error: safe });
 }
 
-module.exports = { getAdmin, requireUser, requireAdmin, distanceMeters, baghdadDate, sendError };
+module.exports = { getAdmin, requireUser, requireAdmin, distanceMeters, baghdadDate, sendError, handleCors };

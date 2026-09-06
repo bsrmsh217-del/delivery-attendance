@@ -1,6 +1,7 @@
-const { getAdmin, requireAdmin, sendError } = require('./_firebase');
+const { getAdmin, requireAdmin, sendError, handleCors } = require('./_firebase');
 
 module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   try {
     const { profile: actor } = await requireAdmin(req);

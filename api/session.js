@@ -1,7 +1,8 @@
 const crypto = require('crypto');
-const { getAdmin, requireUser, sendError } = require('./_firebase');
+const { getAdmin, requireUser, sendError, handleCors } = require('./_firebase');
 
 module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   try {
     const { decoded, profile } = await requireUser(req);

@@ -1,9 +1,10 @@
 const crypto = require('crypto');
-const { getAdmin, sendError } = require('./_firebase');
+const { getAdmin, sendError, handleCors } = require('./_firebase');
 
 const API_KEY = 'AIzaSyD-4qMzlL0BhvuXdZKX3uAU1Ip_zMCaQCg';
 
 module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   const { username, password, deviceId, deviceInfo = '' } = req.body || {};
   const normalized = String(username || '').trim().toLowerCase();
