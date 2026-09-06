@@ -1,1 +1,1 @@
-ارفع محتويات المجلد إلى جذر GitHub ثم Push origin. انتظر Vercel Ready. انشر firestore.rules في Firebase. الإصدار 2.0.15: زر التعديل ظاهر ويعمل، تبويب المعطل، وزر سماح الجهاز الآخر ظاهر في التنبيه والتفاصيل.
+ارفع محتويات المجلد إلى جذر GitHub ثم Push origin. انتظر Vercel Ready. الإصدار 2.0.16 يصلح فتح نافذة تعديل المندوب عند كون createdAt من نوع Firebase Timestamp.
