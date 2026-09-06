@@ -1,1 +1,1 @@
-ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. تأكد من Secret FIREBASE_SERVICE_ACCOUNT في Vercel. الإصدار 2.0.7. المندوب يستطيع التسجيل في أي مخزن ضمن نطاقه، ويسجل اسم المخزن في سجل الحضور.
+ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. الإصدار 2.0.8.
