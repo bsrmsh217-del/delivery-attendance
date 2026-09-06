@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;
       if (role === 'agent' && !isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
       if (role === 'admin' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
-      if (!['admin', 'agent'].includes(role) || !String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(String(username || '').toLowerCase()) || String(password || '').length < 8 || (role === 'agent' && !BRANCHES.includes(branch))) return res.status(400).json({ ok: false, error: 'INVALID_USER_DATA' });
+      if (!['admin', 'agent'].includes(role) || !String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(String(username || '').toLowerCase()) || String(password || '').length < 8 || !BRANCHES.includes(branch)) return res.status(400).json({ ok: false, error: 'INVALID_USER_DATA' });
       const usernameNorm = String(username).toLowerCase(), lockRef = db.collection('usernames').doc(usernameNorm);
       if ((await lockRef.get()).exists) return res.status(409).json({ ok: false, error: 'USERNAME_TAKEN' });
       const email = `${usernameNorm}@deliveryattendance.app`, au = await admin.auth().createUser({ email, password: String(password), displayName: String(name).trim() });
@@ -36,6 +36,8 @@ module.exports = async function handler(req, res) {
     const ref = db.collection('users').doc(uid), snap = await ref.get();
     if (!snap.exists) return res.status(404).json({ ok: false, error: 'USER_NOT_FOUND' });
     const user = snap.data();
+    const branchAdmin = actor.role === 'admin' && !isPrimaryAdmin(actor);
+    if (branchAdmin && (user.role !== 'agent' || user.branch !== actor.branch || !['resetPassword', 'changeUsername'].includes(action))) return res.status(403).json({ ok: false, error: 'BRANCH_ADMIN_LIMITED' });
     if (user.role === 'owner' && actor.id !== uid) return res.status(403).json({ ok: false, error: 'OWNER_PROTECTED' });
     if (!isOwner(actor) && !isPrimaryAdmin(actor) && actor.id !== uid) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
     if (user.role === 'agent' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });

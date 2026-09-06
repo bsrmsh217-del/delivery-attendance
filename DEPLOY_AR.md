@@ -1,1 +1,1 @@
-ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. الإصدار 2.0.10. قسم تحركات الأدمنية يظهر للOwner فقط.
+ارفع محتويات هذا المجلد إلى جذر GitHub ثم Push origin. انتظر Vercel Ready. انشر firestore.rules في Firebase. الإصدار 2.0.11: أدمن الفرع يرى فرعه فقط ويعدل معرف/رمز المندوب فقط.
