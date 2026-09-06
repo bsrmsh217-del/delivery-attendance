@@ -1,4 +1,4 @@
-const { getAdmin, requireAdmin, isOwner, sendError, handleCors } = require('./_firebase');
+const { getAdmin, requireAdmin, isOwner, isPrimaryAdmin, sendError, handleCors } = require('./_firebase');
 const BRANCHES = ['المركز', 'الحسينية', 'طويريج', 'الحر'];
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -20,6 +20,7 @@ module.exports = async function handler(req, res) {
     if (action === 'createUser') {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;
       if (role === 'agent' && !isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
+      if (role === 'admin' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
       if (!['admin', 'agent'].includes(role) || !String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(String(username || '').toLowerCase()) || String(password || '').length < 8 || (role === 'agent' && !BRANCHES.includes(branch))) return res.status(400).json({ ok: false, error: 'INVALID_USER_DATA' });
       const usernameNorm = String(username).toLowerCase(), lockRef = db.collection('usernames').doc(usernameNorm);
       if ((await lockRef.get()).exists) return res.status(409).json({ ok: false, error: 'USERNAME_TAKEN' });
@@ -36,8 +37,9 @@ module.exports = async function handler(req, res) {
     if (!snap.exists) return res.status(404).json({ ok: false, error: 'USER_NOT_FOUND' });
     const user = snap.data();
     if (user.role === 'owner' && actor.id !== uid) return res.status(403).json({ ok: false, error: 'OWNER_PROTECTED' });
-    if (user.role === 'agent' && action === 'deleteUser' && !isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
-    if (['admin', 'owner'].includes(user.role) && !isOwner(actor) && actor.id !== uid) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
+    if (!isOwner(actor) && !isPrimaryAdmin(actor) && actor.id !== uid) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
+    if (user.role === 'agent' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
+    if (['admin', 'owner'].includes(user.role) && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
     const updates = {};
     if (action === 'resetPassword') { if (String(password || '').length < 8) return res.status(400).json({ ok: false, error: 'WEAK_PASSWORD' }); await admin.auth().updateUser(uid, { password: String(password) }); }
     else if (action === 'changeUsername') { const normalized = String(username || '').trim().toLowerCase(); if (!/^[a-z0-9_]{3,32}$/.test(normalized)) return res.status(400).json({ ok: false, error: 'INVALID_USERNAME' }); const old = user.username; await db.runTransaction(async tx => { const nl = db.collection('usernames').doc(normalized), ex = await tx.get(nl); if (ex.exists && ex.data().userId !== uid) throw Object.assign(new Error('USERNAME_TAKEN'), { statusCode: 409 }); tx.set(nl, { userId: uid, updatedAt: admin.firestore.Timestamp.now() }, { merge: true }); tx.update(ref, { username: normalized, email: `${normalized}@deliveryattendance.app` }); if (old && old !== normalized) tx.delete(db.collection('usernames').doc(old)); }); await admin.auth().updateUser(uid, { email: `${normalized}@deliveryattendance.app` }); }

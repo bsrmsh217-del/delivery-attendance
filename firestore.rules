@@ -13,6 +13,9 @@ service cloud.firestore {
     function isAdmin() {
       return isActive() && (myProfile().role == 'admin' || myProfile().role == 'owner');
     }
+    function isOwner() {
+      return isActive() && myProfile().role == 'owner';
+    }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
@@ -45,7 +48,7 @@ service cloud.firestore {
     }
 
     match /auditLogs/{logId} {
-      allow read: if isAdmin();
+      allow read: if isOwner();
       allow create: if isAdmin();
       allow update, delete: if false;
     }

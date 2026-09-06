@@ -31,6 +31,7 @@ async function requireAdmin(req) {
   return user;
 }
 function isOwner(profile) { return profile?.role === 'owner'; }
+function isPrimaryAdmin(profile) { return profile?.role === 'admin' && profile?.username === 'rasim1010'; }
 function distanceMeters(lat1, lng1, lat2, lng2) {
   const toRad = value => value * Math.PI / 180, radius = 6371000;
   const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
@@ -39,4 +40,4 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 }
 function baghdadDate(date = new Date()) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date); }
 function sendError(res, error) { const status = error.statusCode || 500; res.status(status).json({ ok: false, error: status >= 500 ? 'SERVER_ERROR' : error.message }); }
-module.exports = { getAdmin, requireUser, requireAdmin, isOwner, distanceMeters, baghdadDate, sendError, handleCors };
+module.exports = { getAdmin, requireUser, requireAdmin, isOwner, isPrimaryAdmin, distanceMeters, baghdadDate, sendError, handleCors };
