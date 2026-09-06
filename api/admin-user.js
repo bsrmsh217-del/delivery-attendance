@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     if (!snap.exists) return res.status(404).json({ ok: false, error: 'USER_NOT_FOUND' });
     const user = snap.data();
     const branchAdmin = actor.role === 'admin' && !isPrimaryAdmin(actor);
-    if (branchAdmin && (user.role !== 'agent' || user.branch !== actor.branch || !['resetPassword', 'changeUsername'].includes(action))) return res.status(403).json({ ok: false, error: 'BRANCH_ADMIN_LIMITED' });
+    if (branchAdmin && (user.role !== 'agent' || user.branch !== actor.branch || !['resetPassword', 'changeUsername', 'allowDevice'].includes(action))) return res.status(403).json({ ok: false, error: 'BRANCH_ADMIN_LIMITED' });
     if (user.role === 'owner' && actor.id !== uid) return res.status(403).json({ ok: false, error: 'OWNER_PROTECTED' });
     if (!isOwner(actor) && !isPrimaryAdmin(actor) && actor.id !== uid) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
     if (user.role === 'agent' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });

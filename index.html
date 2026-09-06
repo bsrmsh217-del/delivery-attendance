@@ -289,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.11', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.12', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -482,7 +482,7 @@ function subN(){
   if(nU)nU();
   nU=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc')),sn=>{
     const ns=sn.docs.map(d=>({id:d.id,...d.data()}));renderN(ns);
-    const u=ns.filter(n=>!n.read&&n.type==='alert').length;
+    const visible=CU?.role==='admin'&&CU.username!=='rasim1010'?ns.filter(n=>n.branch===CU.branch):ns;const u=visible.filter(n=>!n.read&&n.type==='alert').length;
     $('nBdg').style.display=u>0?'flex':'none';$('nBdg').textContent=u;$('s3').textContent=u;
   });
 }
@@ -573,11 +573,12 @@ window.deleteLeave=async id=>{await deleteDoc(doc(db,'leaves',id));await addAudi
 
 async function addN(d){try{await addDoc(collection(db,'notifications'),{...d,read:false,createdAt:new Date().toISOString()});}catch(e){}}
 function renderN(ns){
+  if(CU?.role==='admin'&&CU.username!=='rasim1010')ns=ns.filter(n=>n.branch===CU.branch);
   const c=$('nList');
   if(!ns.length){c.innerHTML='<div class="empty"><div class="ei">🔕</div>لا توجد إشعارات</div>';return;}
   c.innerHTML=ns.map(n=>`<div class="ntf ${n.type}"><div style="font-size:22px;flex-shrink:0">${n.icon||'ℹ️'}</div><div><div style="font-weight:600;font-size:14px">${(n.text||'').replace(/\n/g,'<br>')}</div><div style="font-size:12px;color:var(--mu);margin-top:4px">🕐 ${fDT(n.createdAt)}</div></div></div>`).join('');
 }
-async function markNR(){const q=query(collection(db,'notifications'),where('read','==',false));const sn=await getDocs(q);const b=writeBatch(db);sn.docs.forEach(d=>b.update(d.ref,{read:true}));if(sn.docs.length)await b.commit();}
+async function markNR(){const q=query(collection(db,'notifications'),where('read','==',false));const sn=await getDocs(q);const b=writeBatch(db);const docs=CU?.role==='admin'&&CU.username!=='rasim1010'?sn.docs.filter(d=>d.data().branch===CU.branch):sn.docs;docs.forEach(d=>b.update(d.ref,{read:true}));if(docs.length)await b.commit();}
 window.clearNotifs=async()=>{const sn=await getDocs(collection(db,'notifications'));const b=writeBatch(db);sn.docs.forEach(d=>b.delete(d.ref));await b.commit();toast('🗑 تم مسح الإشعارات');};
 
 

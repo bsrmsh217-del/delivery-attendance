@@ -1,8 +1,8 @@
 {
-  "version": "2.0.11",
-  "versionCode": 31,
+  "version": "2.0.12",
+  "versionCode": 32,
   "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
   "notes": "توحيد اتصال الموقع وAPK مع API الإنتاج وإصلاح طلبات Capacitor عبر CORS.",
   "required": false,
-  "publishedAt": "2026-09-06T05:32:00+03:00"
+  "publishedAt": "2026-09-06T05:40:00+03:00"
 }
