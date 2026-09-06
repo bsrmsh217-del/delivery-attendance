@@ -15,9 +15,10 @@ module.exports = async function handler(req, res) {
 
     const admin = getAdmin();
     const db = admin.firestore();
-    const warehouseSnap = await db.collection('settings').doc('warehouse').get();
-    if (!warehouseSnap.exists) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
-    const warehouse = warehouseSnap.data();
+    const locationsSnap = await db.collection('settings').doc('locations').get();
+    const legacySnap = await db.collection('settings').doc('warehouse').get();
+    const warehouse = locationsSnap.exists && profile.branch && locationsSnap.data()[profile.branch] ? locationsSnap.data()[profile.branch] : (legacySnap.exists ? legacySnap.data() : null);
+    if (!warehouse) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
     const radius = Number(warehouse.radius || 100);
     const distance = distanceMeters(Number(lat), Number(lng), Number(warehouse.lat), Number(warehouse.lng));
     const maximumAccuracy = Math.min(50, radius);
@@ -38,6 +39,7 @@ module.exports = async function handler(req, res) {
           agentId: decoded.uid,
           agentName: profile.name,
           username: profile.username,
+          branch: profile.branch || '',
           date: baghdadDate(now.toDate()),
           checkinTime: now,
           checkoutTime: null,

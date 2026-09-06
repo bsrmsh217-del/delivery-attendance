@@ -11,7 +11,7 @@ service cloud.firestore {
       return signedIn() && myProfile().status == 'active';
     }
     function isAdmin() {
-      return isActive() && myProfile().role == 'admin';
+      return isActive() && (myProfile().role == 'admin' || myProfile().role == 'owner');
     }
 
     match /users/{uid} {

@@ -11,15 +11,15 @@ module.exports = async function handler(req, res) {
     const admin = getAdmin();
     const db = admin.firestore();
     const ref = db.collection('users').doc(decoded.uid);
-    if (profile.role !== 'admin' && profile.deviceId && profile.deviceId !== deviceId) {
+    if (!['admin', 'owner'].includes(profile.role) && profile.deviceId && profile.deviceId !== deviceId) {
       const now = admin.firestore.Timestamp.now();
       await ref.update({ hasAlert: true, lastBlockedDevice: deviceId, lastBlockedDeviceInfo: deviceInfo, lastBlockedAt: now });
       await db.collection('notifications').add({ type: 'alert', icon: '🚨', text: `تنبيه أمني: المندوب "${profile.name}" حاول فتح حسابه من جهاز آخر. الجهاز: ${deviceInfo}`, read: false, createdAt: now.toDate().toISOString() });
       return res.status(403).json({ ok: false, error: 'SECOND_DEVICE_BLOCKED' });
     }
-    const sessionId = profile.role === 'admin' ? null : crypto.randomUUID();
+    const sessionId = ['admin', 'owner'].includes(profile.role) ? null : crypto.randomUUID();
     const updates = { activeSessionId: sessionId, lastLoginAt: admin.firestore.FieldValue.serverTimestamp() };
-    if (profile.role !== 'admin' && !profile.deviceId) Object.assign(updates, { deviceId, deviceInfo });
+    if (!['admin', 'owner'].includes(profile.role) && !profile.deviceId) Object.assign(updates, { deviceId, deviceInfo });
     await ref.update(updates);
     await db.collection('auditLogs').add({ action: 'login', actorId: decoded.uid, actorName: profile.name, target: decoded.uid, details: deviceInfo, createdAt: admin.firestore.FieldValue.serverTimestamp() });
     res.status(200).json({ ok: true, sessionId, profile: { ...profile, ...updates } });

@@ -5,9 +5,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   let createdUid = null;
   try {
-    const { name, username, password, phone = '', employeeId = '', area = '' } = req.body || {};
+    const { name, username, password, phone = '', employeeId = '', area = '', branch = '' } = req.body || {};
     const normalized = String(username || '').trim().toLowerCase();
-    if (!String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(normalized) || String(password || '').length < 8) {
+    const branches = ['المركز', 'الحسينية', 'طويريج', 'الحر'];
+    if (!String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(normalized) || String(password || '').length < 8 || !branches.includes(String(branch).trim())) {
       return res.status(400).json({ ok: false, error: 'INVALID_REGISTRATION_DATA' });
     }
     const admin = getAdmin();
@@ -26,7 +27,7 @@ module.exports = async function handler(req, res) {
       tx.create(lockRef, { userId: authUser.uid, createdAt: now });
       tx.create(db.collection('users').doc(authUser.uid), {
         authUid: authUser.uid, email, username: normalized, name: String(name).trim(),
-        phone: String(phone).trim(), employeeId: String(employeeId).trim(), area: String(area).trim(),
+        phone: String(phone).trim(), employeeId: String(employeeId).trim(), area: String(area).trim(), branch: String(branch).trim(),
         role: 'agent', status: 'pending', deviceId: null, deviceInfo: null,
         activeSessionId: null, hasAlert: false, createdAt: now
       });

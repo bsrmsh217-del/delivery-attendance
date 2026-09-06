@@ -150,7 +150,8 @@ input[type=range]{flex:1;accent-color:var(--p);}
       <div class="fg"><label>اسم المستخدم</label><input id="ru" type="text" placeholder="أحرف إنجليزية صغيرة وأرقام" autocapitalize="none"><div class="ht">مثال: ahmed123</div></div>
       <div class="fg"><label>رقم الهاتف (اختياري)</label><input id="rphone" type="tel" placeholder="07xxxxxxxxx"></div>
       <div class="fg"><label>الرقم الوظيفي (اختياري)</label><input id="rempid" type="text" placeholder="مثال: D-102"></div>
-      <div class="fg"><label>المنطقة (اختياري)</label><input id="rarea" type="text" placeholder="منطقة عمل المندوب"></div>
+  <div class="fg"><label>المنطقة (اختياري)</label><input id="rarea" type="text" placeholder="منطقة عمل المندوب"></div>
+  <div class="fg"><label>الفرع <span style="color:var(--d)">*</span></label><select id="rbranch"><option value="">اختر الفرع</option><option>المركز</option><option>الحسينية</option><option>طويريج</option><option>الحر</option></select></div>
       <div class="fg"><label>كلمة المرور</label><input id="rp" type="password" placeholder="6 أحرف على الأقل"></div>
       <div class="fg"><label>تأكيد كلمة المرور</label><input id="rp2" type="password" placeholder="أعد كلمة المرور"></div>
       <div id="rerr" class="er"></div>
@@ -229,7 +230,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
     <input type="text" id="fn" placeholder="🔍 اسم المندوب" oninput="filterAtt()">
     <input type="date" id="ff" onchange="filterAtt()">
     <input type="date" id="ft" onchange="filterAtt()">
-    <select id="fs" onchange="filterAtt()" style="flex:1;min-width:120px"><option value="">كل الحالات</option><option value="open">لم يسجل خروجًا</option><option value="closed">مكتمل</option></select>
+    <select id="fs" onchange="filterAtt()" style="flex:1;min-width:120px"><option value="">كل الحالات</option><option value="open">لم يسجل خروجًا</option><option value="closed">مكتمل</option></select><select id="fb" onchange="filterAtt()" style="flex:1;min-width:120px"><option value="">كل الفروع</option><option>المركز</option><option>الحسينية</option><option>طويريج</option><option>الحر</option></select>
     <button class="btn bg" onclick="clearF()" style="padding:10px 12px;font-size:13px;border-radius:10px">مسح</button>
   </div>
   <div class="fbar"><button class="btn bs" onclick="exportExcel()">تصدير Excel</button><button class="btn bp" onclick="printReport()">طباعة التقرير</button></div>
@@ -281,6 +282,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
     <div id="lprev" style="background:#f9fafb;border-radius:8px;padding:10px;font-size:13px;color:var(--mu);display:none;margin-bottom:12px"></div>
     <button class="btn bs bb" onclick="saveWH()">✅ حفظ إعدادات المخزن</button>
   </div>
+  <div class="card"><div class="ct">📍 مواقع الفروع ونطاقاتها</div><div class="ht" style="margin-bottom:12px">حدد إحداثيات ونطاق كل فرع. المندوب يُفحص تلقائياً على موقع فرعه.</div><div id="branchLocations"></div><button class="btn bs bb" onclick="saveLocations()">✅ حفظ مواقع الفروع</button></div>
   <div class="card">
     <div class="ct">🔑 تغيير كلمة مرور الأدمن</div>
     <div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="napw" placeholder="6 أحرف على الأقل"></div>
@@ -297,6 +299,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 </div>
 
 <div id="sec_management" class="asec">
+  <div class="card"><div class="ct">👑 إدارة الحسابات والصلاحيات</div><div class="ib2">الـOwner يملك كل الصلاحيات. الأدمن يستطيع إدارة الأدمن الثانوي، أما إنشاء حسابات المندوبين فهو محصور بالـOwner.</div><button class="btn bo bb" onclick="bootstrapOwner()" style="margin-bottom:12px">تهيئة حساب Owner (owner123)</button><div class="ib2" style="display:none"></div><div class="fg"><label>نوع الحساب</label><select id="newRole"><option value="admin">أدمن ثانوي</option><option value="agent">مندوب</option></select></div><div class="fg"><label>الاسم</label><input id="newName" placeholder="الاسم الكامل"></div><div class="fg"><label>اسم المستخدم</label><input id="newUsername" placeholder="username" autocapitalize="none"></div><div class="fg"><label>كلمة المرور</label><input id="newPassword" type="password" placeholder="8 أحرف على الأقل"></div><div class="fg"><label>الفرع للمندوب</label><select id="newBranch"><option value="">اختر الفرع</option><option>المركز</option><option>الحسينية</option><option>طويريج</option><option>الحر</option></select></div><button class="btn bp bb" onclick="createManagedUser()">إنشاء الحساب</button></div>
   <div class="card"><div class="ct">🗓️ الإجازات والملاحظات</div><div class="fg"><label>المندوب</label><select id="leaveAgent"></select></div><div style="display:flex;gap:8px"><div class="fg" style="flex:1"><label>من</label><input id="leaveFrom" type="date"></div><div class="fg" style="flex:1"><label>إلى</label><input id="leaveTo" type="date"></div></div><div class="fg"><label>السبب</label><input id="leaveReason" type="text" placeholder="سبب الإجازة أو الملاحظة"></div><button class="btn bp bb" onclick="saveLeave()">حفظ الإجازة</button><div id="leaveList" style="margin-top:16px"></div></div>
   <div class="card"><div class="ct">🧾 سجل التدقيق</div><div id="auditList"><div class="empty">جاري التحميل...</div></div></div>
   <div class="card"><div class="ct">🔄 تحديث التطبيق</div><div class="dr"><span class="dl">الإصدار الحالي</span><span class="dv" id="appVer">1.0.0</span></div><div class="ib2" style="margin-top:12px">تحديثات الواجهة تصل عند نشر الملفات على الموقع. وإذا تغيّرت مكونات Android، يظهر للمندوب رابط تنزيل APK الجديد وتأكيد التثبيت من النظام.</div><button class="btn bp bb" onclick="checkForUpdates(true)">فحص وجود تحديث</button></div>
@@ -379,33 +382,33 @@ window.doLogin=async()=>{
     if(!profile){const ps=await getDoc(doc(db,'users',credential.user.uid));if(ps.exists())profile={id:ps.id,...ps.data()};}
     if(!profile?.role)throw Error('PROFILE_NOT_FOUND');
     CU={id:credential.user.uid,...profile};sessionId=session.sessionId||null;localStorage.setItem('_s',JSON.stringify({uid:CU.id,did:getDid(),sessionId}));
-    if(CU.role==='admin'){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}toast(`مرحباً ${CU.name}!`);
+    if(['admin','owner'].includes(CU.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}toast(`مرحباً ${CU.name}${CU.branch?' - '+CU.branch:''}!`);
   }catch(e){try{await signOut(auth);}catch(_){}const m=e.code==='auth/invalid-credential'?'اسم المستخدم أو كلمة المرور غير صحيحة':apiMsg(e);sErr('lerr',m);}
   btn.disabled=false;btn.innerHTML='دخول';
 };
 
 window.doRegister=async()=>{
-  const n=$('rn').value.trim(),u=$('ru').value.trim().toLowerCase(),phone=$('rphone').value.trim(),employeeId=$('rempid').value.trim(),area=$('rarea').value.trim(),p=$('rp').value,p2=$('rp2').value;
+  const n=$('rn').value.trim(),u=$('ru').value.trim().toLowerCase(),phone=$('rphone').value.trim(),employeeId=$('rempid').value.trim(),area=$('rarea').value.trim(),branch=$('rbranch').value,p=$('rp').value,p2=$('rp2').value;
   hErr('rerr');
-  if(!n||!u||!p){sErr('rerr','أكمل جميع الحقول');return;}
+  if(!n||!u||!p||!branch){sErr('rerr','أكمل جميع الحقول واختر الفرع');return;}
   if(!/^[a-z0-9_]+$/.test(u)){sErr('rerr','اسم المستخدم: أحرف إنجليزية صغيرة وأرقام فقط');return;}
   if(u.length<3){sErr('rerr','اسم المستخدم 3 أحرف على الأقل');return;}
   if(p.length<8){sErr('rerr','كلمة المرور 8 أحرف على الأقل');return;}
   if(p!==p2){sErr('rerr','كلمة المرور غير متطابقة');return;}
   try{
-    await apiCall('/api/register',{name:n,username:u,password:p,phone,employeeId,area},false);
+    await apiCall('/api/register',{name:n,username:u,password:p,phone,employeeId,area,branch},false);
     toast('تم إنشاء الحساب! انتظر موافقة الأدمن');
-    ['rn','ru','rphone','rempid','rarea','rp','rp2'].forEach(id=>$(id).value='');window.switchTab('login');
+    ['rn','ru','rphone','rempid','rarea','rbranch','rp','rp2'].forEach(id=>$(id).value='');window.switchTab('login');
   }catch(e){sErr('rerr',apiMsg(e));}
 };
 
 window.doLogout=async()=>{
   if(wid)navigator.geolocation.clearWatch(wid);if(clkInt)clearInterval(clkInt);if(aU)aU();if(nU)nU();if(uU)uU();if(sessionUnsub)sessionUnsub();
-  if(CU?.role!=='admin'&&CU?.id&&sessionId){try{await updateDoc(doc(db,'users',CU.id),{activeSessionId:null,lastLogoutAt:serverTimestamp()});}catch(e){}}try{await signOut(auth);}catch(e){}localStorage.removeItem('_s');CU=null;sessionId=null;allU=[];allA=[];openR=null;showScr('loginScreen');toast('تم تسجيل الخروج');
+  if(!['admin','owner'].includes(CU?.role)&&CU?.id&&sessionId){try{await updateDoc(doc(db,'users',CU.id),{activeSessionId:null,lastLogoutAt:serverTimestamp()});}catch(e){}}try{await signOut(auth);}catch(e){}localStorage.removeItem('_s');CU=null;sessionId=null;allU=[];allA=[];openR=null;showScr('loginScreen');toast('تم تسجيل الخروج');
 };
 
 function initAgent(){
-  $('agName').textContent=CU.name;startClk();startLoc();loadTR();updBtn();watchSession();
+  $('agName').textContent=CU.name+(CU.branch?' - '+CU.branch:'');startClk();startLoc();loadTR();updBtn();watchSession();
 }
 function watchSession(){if(sessionUnsub)sessionUnsub();sessionUnsub=onSnapshot(doc(db,'users',CU.id),sn=>{if(!sn.exists())return;const u=sn.data();if(u.status!=='active'||(u.activeSessionId&&u.activeSessionId!==sessionId)){localStorage.removeItem('_s');toast('تم إنهاء الجلسة لأن الحساب فُتح في جلسة أخرى',5000);setTimeout(()=>location.reload(),1800);}});}
 
@@ -463,7 +466,7 @@ function startLoc(){
   wid=navigator.geolocation.watchPosition(
     pos=>{myL={lat:pos.coords.latitude,lng:pos.coords.longitude};locAccuracy=Math.round(pos.coords.accuracy||0);chkLoc();},
     ()=>{setLP('bad','تعذّر تحديد الموقع — فعّل GPS');$('mainBtn').disabled=true;},
-    {enableHighAccuracy:true,timeout:15000,maximumAge:8000}
+    {enableHighAccuracy:true,timeout:8000,maximumAge:3000}
   );
 }
 
@@ -471,13 +474,13 @@ async function chkLoc(){
   try{
     if(!navigator.onLine){locOk=false;setLP('bad','لا يوجد اتصال بالإنترنت');return;}
     await refreshDeviceSecurity();if(securityState.mockLocation||securityState.developerOptions){locOk=false;insideSince=null;setLP('bad','الموقع الوهمي أو إعدادات المطور مفعّلة');$('mainBtn').disabled=true;return;}
-    const sn=await getDoc(doc(db,'settings','warehouse'));
+    const ls=await getDoc(doc(db,'settings','locations')),sn=ls.exists()&&ls.data()[CU.branch]?{exists:()=>true,data:()=>ls.data()[CU.branch]}:await getDoc(doc(db,'settings','warehouse'));
     if(!sn.exists()||!sn.data().lat){setLP('bad','موقع المخزن غير محدد');return;}
     const wh=sn.data(),d=dist(myL.lat,myL.lng,wh.lat,wh.lng),r=Number(wh.radius||100),accuracyOk=locAccuracy>0&&locAccuracy<=Math.min(50,r);
     $('dstxt').textContent=`المسافة: ${d} م — الحد: ${r} م — دقة GPS: ${locAccuracy||'?'} م`;
     if(d<=r&&accuracyOk){
-      if(!insideSince){insideSince=Date.now();locOk=false;setLP('chk','اثبت داخل النطاق لمدة 10 ثوانٍ');clearTimeout(stabilityTimer);stabilityTimer=setTimeout(()=>{if(insideSince&&navigator.onLine){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}},10000);}
-      else if(Date.now()-insideSince>=10000){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}
+      if(!insideSince){insideSince=Date.now();locOk=false;setLP('chk','اثبت داخل النطاق لمدة 3 ثوانٍ');clearTimeout(stabilityTimer);stabilityTimer=setTimeout(()=>{if(insideSince&&navigator.onLine){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}},3000);}
+      else if(Date.now()-insideSince>=3000){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}
     }else{clearTimeout(stabilityTimer);insideSince=null;locOk=false;$('mainBtn').disabled=true;if(d<=r)setLP('bad','دقة GPS غير كافية — انتظر ثبات الموقع');else setLP('bad',`خارج النطاق (${d}م)`);}
   }catch(e){locOk=false;$('mainBtn').disabled=true;}
 }
@@ -532,13 +535,13 @@ window.gotoSec=name=>{
 };
 
 window.filterAtt=()=>{
-  const nm=($('fn')?.value||'').toLowerCase(),fr=$('ff')?.value||'',to=$('ft')?.value||'',st=$('fs')?.value||'';
+  const nm=($('fn')?.value||'').toLowerCase(),fr=$('ff')?.value||'',to=$('ft')?.value||'',st=$('fs')?.value||'',br=$('fb')?.value||'';
   let d=[...allA];
   if(nm)d=d.filter(a=>(a.agentName||'').toLowerCase().includes(nm)||(a.username||'').includes(nm));
-  if(fr)d=d.filter(a=>a.date>=fr);if(to)d=d.filter(a=>a.date<=to);if(st==='open')d=d.filter(a=>!a.checkoutTime);if(st==='closed')d=d.filter(a=>a.checkoutTime);
+  if(fr)d=d.filter(a=>a.date>=fr);if(to)d=d.filter(a=>a.date<=to);if(st==='open')d=d.filter(a=>!a.checkoutTime);if(st==='closed')d=d.filter(a=>a.checkoutTime);if(br)d=d.filter(a=>a.branch===br);
   filteredA=d;renderTbl(d);
 };
-window.clearF=()=>{['fn','ff','ft','fs'].forEach(id=>$(id).value='');window.filterAtt();};
+window.clearF=()=>{['fn','ff','ft','fs','fb'].forEach(id=>$(id).value='');window.filterAtt();};
 window.exportExcel=()=>{const rows=(filteredA.length?filteredA:allA).map(r=>({المندوب:r.agentName||'',المستخدم:r.username||'',التاريخ:r.date||'',الدخول:r.checkinTime?fT(r.checkinTime):'',الخروج:r.checkoutTime?fT(r.checkoutTime):'لم يسجل خروجًا',المدة:r.checkoutTime?(r.duration||dur(r.checkinTime,r.checkoutTime)):'',الحالة:r.checkoutTime?'مكتمل':'مفتوح'}));if(!rows.length){toast('لا توجد بيانات للتصدير');return;}const cols=Object.keys(rows[0]),esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"',csv='\uFEFF'+[cols,...rows.map(r=>cols.map(c=>r[c]))].map(x=>x.map(esc).join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`attendance-${dStr()}.csv`;a.click();URL.revokeObjectURL(a.href);addAudit('export_report','attendance',`${rows.length} records`);};
 window.printReport=()=>{const d=filteredA.length?filteredA:allA,w=open('','_blank'),rows=d.map(r=>`<tr><td>${r.agentName||''}</td><td>${r.date||''}</td><td>${r.checkinTime?fT(r.checkinTime):''}</td><td>${r.checkoutTime?fT(r.checkoutTime):'لم يسجل'}</td><td>${r.checkoutTime?(r.duration||dur(r.checkinTime,r.checkoutTime)):'-'}</td></tr>`).join('');w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><title>تقرير الحضور</title><style>body{font-family:Arial;padding:30px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:right}</style></head><body><h2>تقرير حضور المندوبين</h2><p>تاريخ الطباعة: ${fDT(new Date())}</p><table><tr><th>المندوب</th><th>التاريخ</th><th>الدخول</th><th>الخروج</th><th>المدة</th></tr>${rows}</table></body></html>`);w.document.close();w.print();addAudit('print_report','attendance',`${d.length} records`);};
 
@@ -559,11 +562,11 @@ window.manualCheckout=async id=>{const reason=prompt('اكتب سبب تسجيل
 window.swAgTab=tab=>{agTab=tab;document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',(tab==='active')?i===0:i===1));renderAgs();};
 window.renderAgs=()=>{
   const s=($('ags')?.value||'').toLowerCase();
-  const list=allU.filter(u=>{if(u.role==='admin')return false;return agTab==='active'?(u.status==='active'):(u.status==='pending');}).filter(u=>!s||u.name.toLowerCase().includes(s)||u.username.includes(s)||(u.phone||'').includes(s)||(u.employeeId||'').toLowerCase().includes(s));
+  const list=allU.filter(u=>{if(u.role!=='agent')return false;return agTab==='active'?(u.status==='active'):(u.status==='pending');}).filter(u=>!s||u.name.toLowerCase().includes(s)||u.username.includes(s)||(u.branch||'').includes(s)||(u.phone||'').includes(s)||(u.employeeId||'').toLowerCase().includes(s));
   const c=$('agList');
   if(!list.length){c.innerHTML='<div class="empty"><div class="ei">👤</div>لا يوجد مندوبون</div>';return;}
   const td=dStr();
-  c.innerHTML=list.map(u=>{const pr=allA.some(a=>a.agentId===u.id&&a.date===td&&!a.checkoutTime);return`<div class="agr" onclick="showAgD('${u.id}')"><div class="av ${u.hasAlert?'red':''}">${u.name.charAt(0)}${u.hasAlert?'<div class="adot"></div>':''}</div><div style="flex:1"><div style="font-weight:700">${u.name}</div><div style="font-size:13px;color:var(--mu)">@${u.username}</div></div>${u.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn bs" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();apprAg('${u.id}')">قبول</button><button class="btn bd" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();blkAg('${u.id}')">رفض</button></div>`:`<div class="sd ${pr?'on':'off'}"></div>`}</div>`;}).join('');
+  c.innerHTML=list.map(u=>{const pr=allA.some(a=>a.agentId===u.id&&a.date===td&&!a.checkoutTime);return`<div class="agr" onclick="showAgD('${u.id}')"><div class="av ${u.hasAlert?'red':''}">${u.name.charAt(0)}${u.hasAlert?'<div class="adot"></div>':''}</div><div style="flex:1"><div style="font-weight:700">${u.name} — ${u.branch||'بدون فرع'}</div><div style="font-size:13px;color:var(--mu)">@${u.username}</div></div>${u.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn bs" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();apprAg('${u.id}')">قبول</button><button class="btn bd" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();blkAg('${u.id}')">رفض</button></div>`:`<div class="sd ${pr?'on':'off'}"></div>`}</div>`;}).join('');
 };
 
 function updPB(){const p=allU.filter(u=>u.role!=='admin'&&u.status==='pending');const b=$('pb');b.style.display=p.length?'flex':'none';if(p.length)$('pc').textContent=p.length;}
@@ -571,7 +574,7 @@ function updPB(){const p=allU.filter(u=>u.role!=='admin'&&u.status==='pending');
 window.showAgD=async uid=>{
   const u=allU.find(x=>x.id===uid);if(!u)return;
   const recs=allA.filter(a=>a.agentId===uid),days=[...new Set(recs.map(a=>a.date))].length,td=dStr(),pr=recs.some(a=>a.date===td&&!a.checkoutTime);
-  $('agMBody').innerHTML=`<div style="text-align:center;margin-bottom:20px"><div style="width:76px;height:76px;background:${u.hasAlert?'var(--d)':'var(--p)'};border-radius:20px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800;margin-bottom:10px">${u.name.charAt(0)}</div><div style="font-size:20px;font-weight:800">${u.name}</div><div style="color:var(--mu)">@${u.username}</div>${u.hasAlert?'<div style="color:#ef4444;font-weight:700;margin-top:8px;font-size:14px">🚨 تنبيه: فُتح الحساب من جهاز آخر!</div>':''}</div><div class="dr"><span class="dl">أيام الحضور</span><span class="dv">${days} يوم</span></div><div class="dr"><span class="dl">حالة اليوم</span><span class="dv">${pr?'<span class="tag ti">حاضر ✅</span>':'<span class="tag to">غائب</span>'}</span></div><div class="dr"><span class="dl">الجهاز</span><span class="dv" style="font-size:12px">${u.deviceInfo||'لم يُسجَّل'}</span></div><div class="dr"><span class="dl">الهاتف</span><span class="dv">${u.phone||'-'}</span></div><div class="dr"><span class="dl">الرقم الوظيفي</span><span class="dv">${u.employeeId||'-'}</span></div><div class="dr"><span class="dl">المنطقة</span><span class="dv">${u.area||'-'}</span></div><div class="dr"><span class="dl">تاريخ الانضمام</span><span class="dv">${fD(u.createdAt?.split('T')[0])}</span></div><div style="margin-top:20px"><div style="font-weight:700;margin-bottom:12px">⚙️ إجراءات الأدمن</div><div class="fg"><label>تعديل اسم المستخدم</label><input type="text" id="eu" value="${u.username}"></div><div class="fg"><label>رقم الهاتف</label><input type="tel" id="ephone" value="${u.phone||''}"></div><div class="fg"><label>الرقم الوظيفي</label><input type="text" id="eempid" value="${u.employeeId||''}"></div><div class="fg"><label>المنطقة</label><input type="text" id="earea" value="${u.area||''}"></div><div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="ep" placeholder="اتركه فارغاً إذا لا تريد التغيير"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1" onclick="svAgE('${uid}')">💾 حفظ</button>${u.status==='pending'?`<button class="btn bs" style="flex:1" onclick="apprAg('${uid}')">✅ قبول</button>`:''}<button class="btn bd" style="flex:1" onclick="blkAg('${uid}')">${u.status==='blocked'?'🔓 رفع الحظر':'🚫 حظر'}</button><button class="btn bg" style="flex:1" onclick="clrAlrt('${uid}')">🔕 مسح التنبيه</button>${u.lastBlockedDevice?`<button class="btn bs" style="flex:1" onclick="allowBlockedDevice('${uid}')">اعتماد الجهاز الجديد</button>`:''}<button class="btn bg" style="flex:1" onclick="rstDev('${uid}')">إعادة الجهاز</button></div></div>`;
+  $('agMBody').innerHTML=`<div style="text-align:center;margin-bottom:20px"><div style="width:76px;height:76px;background:${u.hasAlert?'var(--d)':'var(--p)'};border-radius:20px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800;margin-bottom:10px">${u.name.charAt(0)}</div><div style="font-size:20px;font-weight:800">${u.name} — ${u.branch||'بدون فرع'}</div><div style="color:var(--mu)">@${u.username}</div>${u.hasAlert?'<div style="color:#ef4444;font-weight:700;margin-top:8px;font-size:14px">🚨 تنبيه: فُتح الحساب من جهاز آخر!</div>':''}</div><div class="dr"><span class="dl">أيام الحضور</span><span class="dv">${days} يوم</span></div><div class="dr"><span class="dl">حالة اليوم</span><span class="dv">${pr?'<span class="tag ti">حاضر ✅</span>':'<span class="tag to">غائب</span>'}</span></div><div class="dr"><span class="dl">الجهاز</span><span class="dv" style="font-size:12px">${u.deviceInfo||'لم يُسجَّل'}</span></div><div class="dr"><span class="dl">الهاتف</span><span class="dv">${u.phone||'-'}</span></div><div class="dr"><span class="dl">الرقم الوظيفي</span><span class="dv">${u.employeeId||'-'}</span></div><div class="dr"><span class="dl">المنطقة</span><span class="dv">${u.area||'-'}</span></div><div class="dr"><span class="dl">تاريخ الانضمام</span><span class="dv">${fD(u.createdAt?.split('T')[0])}</span></div><div style="margin-top:20px"><div style="font-weight:700;margin-bottom:12px">⚙️ إجراءات الأدمن</div><div class="fg"><label>تعديل اسم المستخدم</label><input type="text" id="eu" value="${u.username}"></div><div class="fg"><label>رقم الهاتف</label><input type="tel" id="ephone" value="${u.phone||''}"></div><div class="fg"><label>الرقم الوظيفي</label><input type="text" id="eempid" value="${u.employeeId||''}"></div><div class="fg"><label>المنطقة</label><input type="text" id="earea" value="${u.area||''}"></div><div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="ep" placeholder="اتركه فارغاً إذا لا تريد التغيير"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1" onclick="svAgE('${uid}')">💾 حفظ</button>${u.status==='pending'?`<button class="btn bs" style="flex:1" onclick="apprAg('${uid}')">✅ قبول</button>`:''}<button class="btn bd" style="flex:1" onclick="blkAg('${uid}')">${u.status==='blocked'?'🔓 رفع الحظر':'🚫 حظر'}</button><button class="btn bg" style="flex:1" onclick="clrAlrt('${uid}')">🔕 مسح التنبيه</button><button class="btn bd" style="flex:1" onclick="deleteUser('${uid}')">🗑 حذف نهائي</button>${u.lastBlockedDevice?`<button class="btn bs" style="flex:1" onclick="allowBlockedDevice('${uid}')">اعتماد الجهاز الجديد</button>`:''}<button class="btn bg" style="flex:1" onclick="rstDev('${uid}')">إعادة الجهاز</button></div></div>`;
   openM('agModal');
 };
 
@@ -583,13 +586,16 @@ window.svAgE=async uid=>{
   if(Object.keys(upd).length)await updateDoc(doc(db,'users',uid),upd);await addAudit('edit_agent',uid,Object.keys(upd).join(','));
   toast('✅ تم حفظ التعديلات');closeM('agModal');await loadAllU();
 };
+window.bootstrapOwner=async()=>{try{await apiCall('/api/admin-user',{action:'bootstrapOwner'});toast('✅ تم إنشاء owner123 والرمز 123123');}catch(e){toast(apiMsg(e),5000);}};
+window.createManagedUser=async()=>{const role=$('newRole').value;if(role==='agent'&&CU.role!=='owner'){toast('إنشاء المندوبين للـOwner فقط');return;}try{await apiCall('/api/admin-user',{action:'createUser',role,name:$('newName').value.trim(),username:$('newUsername').value.trim().toLowerCase(),password:$('newPassword').value,branch:$('newBranch').value});toast('✅ تم إنشاء الحساب');['newName','newUsername','newPassword'].forEach(id=>$(id).value='');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
+window.deleteUser=async uid=>{if(!confirm('حذف نهائي لكل بيانات الحساب وسجلاته؟'))return;try{await apiCall('/api/admin-user',{action:'deleteUser',uid});toast('تم الحذف النهائي');closeM('agModal');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
 window.apprAg=async uid=>{await apiCall('/api/admin-user',{action:'approve',uid});toast('تمت الموافقة');closeM('agModal');await loadAllU();};
 window.blkAg=async uid=>{const u=allU.find(x=>x.id===uid);const action=u.status==='blocked'?'unblock':'block';await apiCall('/api/admin-user',{action,uid});toast(action==='block'?'محظور':'رُفع الحظر');closeM('agModal');await loadAllU();};
 window.clrAlrt=async uid=>{await updateDoc(doc(db,'users',uid),{hasAlert:false});await addAudit('clear_device_alert',uid,'');toast('مسح التنبيه');closeM('agModal');await loadAllU();};
 window.rstDev=async uid=>{await apiCall('/api/admin-user',{action:'resetDevice',uid});toast('تم إعادة تعيين الجهاز');closeM('agModal');await loadAllU();};
 window.allowBlockedDevice=async uid=>{await apiCall('/api/admin-user',{action:'allowDevice',uid});toast('تم اعتماد الجهاز الجديد');closeM('agModal');await loadAllU();};
 
-async function loadManagement(){if(CU?.role!=='admin')return;try{const [ls,as]=await Promise.all([getDocs(query(collection(db,'leaves'),orderBy('createdAt','desc'))),getDocs(query(collection(db,'auditLogs'),orderBy('createdAt','desc')))]);const leaves=ls.docs.map(d=>({id:d.id,...d.data()})),audits=as.docs.slice(0,100).map(d=>({id:d.id,...d.data()}));$('leaveList').innerHTML=leaves.length?leaves.map(x=>`<div class="ntf info"><div><strong>${x.agentName}</strong><div>${x.from} إلى ${x.to}</div><div style="font-size:12px;color:var(--mu)">${x.reason||''}</div></div><button class="btn bd" style="margin-right:auto;padding:6px 10px" onclick="deleteLeave('${x.id}')">حذف</button></div>`).join(''):'<div class="empty">لا توجد إجازات</div>';$('auditList').innerHTML=audits.length?audits.map(x=>`<div class="hi"><div><strong>${x.actorName||'النظام'}</strong> — ${x.action}<div style="font-size:12px;color:var(--mu)">${x.details||''} | ${x.clientTime?fDT(x.clientTime):''}</div></div></div>`).join(''):'<div class="empty">لا يوجد سجل تدقيق</div>';}catch(e){$('auditList').innerHTML='<div class="empty">تعذر تحميل سجل التدقيق</div>';}}
+async function loadManagement(){if(!['admin','owner'].includes(CU?.role))return;try{const [ls,as]=await Promise.all([getDocs(query(collection(db,'leaves'),orderBy('createdAt','desc'))),getDocs(query(collection(db,'auditLogs'),orderBy('createdAt','desc')))]);const leaves=ls.docs.map(d=>({id:d.id,...d.data()})),audits=as.docs.slice(0,100).map(d=>({id:d.id,...d.data()}));$('leaveList').innerHTML=leaves.length?leaves.map(x=>`<div class="ntf info"><div><strong>${x.agentName}</strong><div>${x.from} إلى ${x.to}</div><div style="font-size:12px;color:var(--mu)">${x.reason||''}</div></div><button class="btn bd" style="margin-right:auto;padding:6px 10px" onclick="deleteLeave('${x.id}')">حذف</button></div>`).join(''):'<div class="empty">لا توجد إجازات</div>';$('auditList').innerHTML=audits.length?audits.map(x=>`<div class="hi"><div><strong>${x.actorName||'النظام'}</strong> — ${x.action}<div style="font-size:12px;color:var(--mu)">${x.details||''} | ${x.clientTime?fDT(x.clientTime):''}</div></div></div>`).join(''):'<div class="empty">لا يوجد سجل تدقيق</div>';}catch(e){$('auditList').innerHTML='<div class="empty">تعذر تحميل سجل التدقيق</div>';}}
 window.saveLeave=async()=>{const uid=$('leaveAgent').value,from=$('leaveFrom').value,to=$('leaveTo').value,reason=$('leaveReason').value.trim(),u=allU.find(x=>x.id===uid);if(!u||!from||!to||to<from){toast('اختر المندوب وتاريخًا صحيحًا');return;}await addDoc(collection(db,'leaves'),{agentId:uid,agentName:u.name,from,to,reason,createdBy:CU.id,createdAt:serverTimestamp()});await addAudit('add_leave',uid,`${from}..${to}`);toast('تم حفظ الإجازة');['leaveFrom','leaveTo','leaveReason'].forEach(id=>$(id).value='');loadManagement();};
 window.deleteLeave=async id=>{await deleteDoc(doc(db,'leaves',id));await addAudit('delete_leave',id,'');loadManagement();};
 
@@ -621,8 +627,9 @@ function setWarehousePoint(lat,lng){
   $('lprev').style.display='block';$('lprev').textContent=`📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} — النطاق: ${radius}م`;
 }
 async function loadWH(){
-  try{const sn=await getDoc(doc(db,'settings','warehouse'));if(sn.exists()){const w=sn.data();$('whD').textContent=`${w.lat?.toFixed(6)||'?'}, ${w.lng?.toFixed(6)||'?'} — النطاق: ${w.radius||100} م`;$('rslider').value=w.radius||100;$('rv').textContent=(w.radius||100)+' م';if(w.lat){$('mlat').value=w.lat.toFixed(6);$('mlng').value=w.lng.toFixed(6);setWarehousePoint(w.lat,w.lng);}}else{$('whD').textContent='لم يُحدد بعد';}}catch(e){}
+  try{const sn=await getDoc(doc(db,'settings','warehouse'));if(sn.exists()){const w=sn.data();$('whD').textContent=`${w.lat?.toFixed(6)||'?'}, ${w.lng?.toFixed(6)||'?'} — النطاق: ${w.radius||100} م`;$('rslider').value=w.radius||100;$('rv').textContent=(w.radius||100)+' م';if(w.lat){$('mlat').value=w.lat.toFixed(6);$('mlng').value=w.lng.toFixed(6);setWarehousePoint(w.lat,w.lng);}}else{$('whD').textContent='لم يُحدد بعد';}const loc=(await getDoc(doc(db,'settings','locations'))).data()||{},bs=['المركز','الحسينية','طويريج','الحر'];$('branchLocations').innerHTML=bs.map(b=>`<div style="border:1px solid var(--bdr);border-radius:10px;padding:10px;margin-bottom:8px"><strong>${b}</strong><div style="display:flex;gap:6px;margin-top:8px"><input id="lat_${b}" type="number" step="0.000001" placeholder="خط العرض" value="${loc[b]?.lat||''}"><input id="lng_${b}" type="number" step="0.000001" placeholder="خط الطول" value="${loc[b]?.lng||''}"><input id="rad_${b}" type="number" min="25" max="500" value="${loc[b]?.radius||100}" style="max-width:90px" title="النطاق بالمتر"></div></div>`).join('');}catch(e){}
 }
+window.saveLocations=async()=>{const bs=['المركز','الحسينية','طويريج','الحر'],locations={};for(const b of bs){const lat=parseFloat($('lat_'+b)?.value),lng=parseFloat($('lng_'+b)?.value),radius=parseInt($('rad_'+b)?.value||100);if(Number.isFinite(lat)&&Number.isFinite(lng))locations[b]={lat,lng,radius:Math.max(25,Math.min(500,radius))};}await setDoc(doc(db,'settings','locations'),locations);toast('✅ تم حفظ مواقع الفروع');};
 window.useMyLoc=()=>{
   if(!navigator.geolocation){toast('GPS غير مدعوم');return;}toast('⏳ جاري تحديد موقعك...');
   navigator.geolocation.getCurrentPosition(pos=>{setWarehousePoint(pos.coords.latitude,pos.coords.longitude);$('lprev').textContent=`📍 ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} — دقة: ${Math.round(pos.coords.accuracy)}م`;toast('✅ تم تحديد موقعك');},()=>toast('❌ تعذّر تحديد الموقع'));
