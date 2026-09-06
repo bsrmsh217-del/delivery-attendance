@@ -289,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.13', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.14', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -554,7 +554,7 @@ window.svAgE=async uid=>{
   if(nu&&nu!==u.username)await apiCall('/api/admin-user',{action:'changeUsername',uid,username:nu});
   if(np)await apiCall('/api/admin-user',{action:'resetPassword',uid,password:np});
   if(CU.role==='admin'&&CU.username!=='rasim1010'){toast('✅ تم تعديل المعرف والرمز');closeM('agModal');await loadAllU();return;}
-  if(Object.keys(upd).length)await updateDoc(doc(db,'users',uid),upd);await addAudit('edit_agent',uid,Object.keys(upd).join(','));
+  if(CU.role==='owner'||CU.username==='rasim1010')await apiCall('/api/admin-user',{action:'updateProfile',uid,...upd});await addAudit('edit_agent',uid,Object.keys(upd).join(','));
   toast('✅ تم حفظ التعديلات');closeM('agModal');await loadAllU();
 };
 window.bootstrapOwner=async()=>{try{await apiCall('/api/admin-user',{action:'bootstrapOwner'});toast('✅ تم إنشاء owner123 والرمز 123123');}catch(e){toast(apiMsg(e),5000);}};

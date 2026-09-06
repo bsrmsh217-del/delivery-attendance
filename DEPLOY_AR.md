@@ -1,1 +1,1 @@
-ارفع محتويات المجلد إلى جذر GitHub ثم Push origin. انتظر Vercel Ready. انشر firestore.rules في Firebase. الإصدار 2.0.13: تبويب الحسابات المعطلة، زر تعديل يعمل، وزر سماح للجهاز الآخر داخل التنبيه.
+ارفع محتويات المجلد إلى جذر GitHub ثم Push origin. انتظر Vercel Ready. انشر firestore.rules في Firebase. الإصدار 2.0.14: إصلاح حفظ تعديل المندوب عبر API.
