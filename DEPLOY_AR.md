@@ -1,1 +1,1 @@
-ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. الإصدار 2.0.9 يصلح عرض خرائط الفروع عند فتح القسم.
+ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. الإصدار 2.0.10. قسم تحركات الأدمنية يظهر للOwner فقط.
