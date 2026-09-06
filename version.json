@@ -1,8 +1,8 @@
 {
-  "version": "2.0.2",
-  "versionCode": 22,
+  "version": "2.0.3",
+  "versionCode": 23,
   "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
-  "notes": "إخفاء تحديث APK من الويب، تصحيح تمييز الأدمن والمندوب، وإصلاح ظهور طلبات الحساب في لوحة الموافقة.",
+  "notes": "توحيد اتصال الموقع وAPK مع API الإنتاج وإصلاح طلبات Capacitor عبر CORS.",
   "required": false,
-  "publishedAt": "2026-09-05T00:00:00+03:00"
+  "publishedAt": "2026-09-06T00:00:00+03:00"
 }

@@ -314,7 +314,10 @@ import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,delete
 
 const FC={apiKey:"AIzaSyD-4qMzlL0BhvuXdZKX3uAU1Ip_zMCaQCg",authDomain:"delivery-attendance-20663.firebaseapp.com",projectId:"delivery-attendance-20663",storageBucket:"delivery-attendance-20663.firebasestorage.app",messagingSenderId:"235545157551",appId:"1:235545157551:web:74b49e281b6b5f04c1195a"};
 const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
-const APP_VERSION='2.0.2', UPDATE_MANIFEST='https://delivery-attendance.vercel.app/version.json';
+// The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
+// Keep the website and APK on the same production API and Firestore project.
+const API_ORIGIN='https://delivery-attendance.vercel.app';
+const APP_VERSION='2.0.3', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -345,7 +348,7 @@ window.checkForUpdates=async(manual=false)=>{try{const r=await fetch(UPDATE_MANI
 window.downloadUpdate=async()=>{if(!IS_NATIVE||!pendingUpdateUrl)return;try{const p=window.Capacitor?.Plugins?.DeviceSecurity;if(p)await p.openUpdate({url:pendingUpdateUrl});else location.href=pendingUpdateUrl;}catch(e){location.href=pendingUpdateUrl;}};
 async function addAudit(action,target='',details=''){try{await addDoc(collection(db,'auditLogs'),{action,target,details,actorId:CU?.id||null,actorName:CU?.name||'النظام',deviceId:getDid(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function logLoginAttempt(username,success,reason=''){try{await addDoc(collection(db,'loginAttempts'),{username,success,reason,deviceId:getDid(),deviceInfo:getDinfo(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
-async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type':'application/json'};if(needsAuth){if(!auth.currentUser)throw Error('UNAUTHORIZED');headers.Authorization='Bearer '+await auth.currentUser.getIdToken();}const r=await fetch(path,{method:'POST',headers,body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'SERVER_ERROR');return d;}
+async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type':'application/json'};if(needsAuth){if(!auth.currentUser)throw Error('UNAUTHORIZED');headers.Authorization='Bearer '+await auth.currentUser.getIdToken();}const url=path.startsWith('http')?path:`${API_ORIGIN}${path}`;const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'SERVER_ERROR');return d;}
 const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق المخزن',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
 
 let CU=null,allU=[],allA=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
