@@ -262,40 +262,9 @@ input[type=range]{flex:1;accent-color:var(--p);}
 </div>
 
 <div id="sec_location" class="asec">
-  <div class="card">
-    <div class="ct">📍 إعدادات موقع المخزن</div>
-    <div style="background:#f0fdf4;border-radius:10px;padding:14px;margin-bottom:16px;border:2px solid #a7f3d0">
-      <div style="font-weight:700;color:#065f46;margin-bottom:4px">📍 الموقع الحالي للمخزن</div>
-      <div id="whD" style="font-size:14px;color:#047857">جاري التحميل...</div>
-    </div>
-    <div class="fg">
-      <label>نطاق السماح بالتسجيل</label>
-      <div class="rw"><span style="font-size:13px;color:var(--mu)">25م</span><input type="range" id="rslider" min="25" max="500" step="25" value="100" oninput="document.getElementById('rv').textContent=this.value+' م';if(warehouseCircle)warehouseCircle.setRadius(parseInt(this.value))"><span style="font-size:13px;color:var(--mu)">500م</span></div>
-      <div style="text-align:center;margin-top:8px"><span class="rv" id="rv">100 م</span></div>
-    </div>
-    <div class="fg">
-      <label>تحديد الموقع من الخريطة</label><div id="warehouseMap" class="mapbox"></div><div class="ht">اضغط على الخريطة لاختيار موقع المخزن، أو استخدم موقعك الحالي.</div>
-      <button class="btn bp bb" onclick="useMyLoc()" style="margin-bottom:10px">📍 استخدام موقعي الحالي كموقع المخزن</button>
-      <div style="text-align:center;font-size:13px;color:var(--mu);margin:8px 0">أو أدخل الإحداثيات يدوياً</div>
-      <div style="display:flex;gap:8px"><input type="number" id="mlat" placeholder="خط العرض (Lat)" step="0.000001"><input type="number" id="mlng" placeholder="خط الطول (Lng)" step="0.000001"></div>
-    </div>
-    <div id="lprev" style="background:#f9fafb;border-radius:8px;padding:10px;font-size:13px;color:var(--mu);display:none;margin-bottom:12px"></div>
-    <button class="btn bs bb" onclick="saveWH()">✅ حفظ إعدادات المخزن</button>
-  </div>
-  <div class="card"><div class="ct">📍 مواقع الفروع ونطاقاتها</div><div class="ht" style="margin-bottom:12px">حدد إحداثيات ونطاق كل فرع. المندوب يُفحص تلقائياً على موقع فرعه.</div><div id="branchLocations"></div><button class="btn bs bb" onclick="saveLocations()">✅ حفظ مواقع الفروع</button></div>
-  <div class="card">
-    <div class="ct">🔑 تغيير كلمة مرور الأدمن</div>
-    <div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="napw" placeholder="6 أحرف على الأقل"></div>
-    <button class="btn bp bb" onclick="chAdmPw()">تغيير كلمة المرور</button>
-  </div>
-  <div class="card">
-    <div class="ct">🛡️ حالة الأمان</div>
-    <div class="ib2">كلمات المرور محفوظة كبصمة SHA-256، مع ربط الجهاز وفحص GPS وتسجيل العمليات. يلزم تفعيل Firebase Authentication وقواعد Firestore المقيدة قبل التشغيل التجاري الواسع.</div>
-    <div class="dr"><span class="dl">قاعدة البيانات</span><span class="dv">Firebase Firestore ✅</span></div>
-    <div class="dr"><span class="dl">تشفير كلمات المرور</span><span class="dv">SHA-256 ✅</span></div>
-    <div class="dr"><span class="dl">كشف الجهاز الثاني</span><span class="dv">مفعّل ✅</span></div>
-    <div class="dr"><span class="dl">التحقق من الموقع</span><span class="dv">GPS Real-time ✅</span></div>
-  </div>
+  <div class="card"><div class="ct">📍 مخازن الفروع</div><div class="ib2">اختر موقع كل مخزن بالضغط على الخريطة، ثم حدد نطاق السماح. لا توجد خانات لخط الطول والعرض.</div><div id="branchMaps"></div><button class="btn bs bb" onclick="saveBranchMaps()">✅ حفظ مواقع المخازن</button></div>
+  <div class="card"><div class="ct">🔑 تغيير كلمة المرور</div><div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="napw" placeholder="8 أحرف على الأقل"></div><button class="btn bp bb" onclick="chAdmPw()">تغيير كلمة المرور</button></div>
+  <div class="card"><div class="ct">🛡️ حالة الأمان</div><div class="ib2">يتم فحص موقع المندوب مقابل مخزن الفرع المرتبط بحسابه.</div><div class="dr"><span class="dl">قاعدة البيانات</span><span class="dv">Firebase Firestore ✅</span></div><div class="dr"><span class="dl">كشف الجهاز الثاني</span><span class="dv">مفعّل ✅</span></div><div class="dr"><span class="dl">مواقع الفروع</span><span class="dv">4 خرائط مستقلة ✅</span></div></div>
 </div>
 
 <div id="sec_management" class="asec">
@@ -320,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.5', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.6', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -487,7 +456,7 @@ async function chkLoc(){
 
 function setLP(t,tx){const p=$('lpill');p.className='lpill '+t;$('ltxt').textContent=tx;}
 
-function initAdmin(){if($('auditCard'))$('auditCard').style.display=CU.role==='owner'?'block':'none';subUsers();subAtt();subN();loadWH();loadManagement();setTimeout(initWarehouseMap,150);setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
+function initAdmin(){if($('auditCard'))$('auditCard').style.display=CU.role==='owner'?'block':'none';subUsers();subAtt();subN();loadBranchMaps();loadManagement();setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
 
 function applyUsersSnapshot(sn){
   allU=sn.docs.map(d=>({id:d.id,...d.data()}));
@@ -518,7 +487,7 @@ function subN(){
 }
 
 function refDash(){
-  const td=dStr(),ags=allU.filter(u=>u.role!=='admin'&&u.status==='active'),tr=allA.filter(a=>a.date===td),pr=tr.filter(a=>!a.checkoutTime);
+  const td=dStr(),ags=allU.filter(u=>u.role==='agent'&&u.status==='active'),tr=allA.filter(a=>a.date===td),pr=tr.filter(a=>!a.checkoutTime);
   $('s0').textContent=pr.length;$('s1').textContent=ags.length;$('s2').textContent=tr.length;
   const pe=$('presNow');
   if(!pr.length){pe.innerHTML='<div class="empty"><div class="ei">📭</div>لا يوجد حضور الآن</div>';return;}
@@ -574,7 +543,7 @@ function updPB(){const p=allU.filter(u=>u.role!=='admin'&&u.status==='pending');
 window.showAgD=async uid=>{
   const u=allU.find(x=>x.id===uid);if(!u)return;
   const recs=allA.filter(a=>a.agentId===uid),days=[...new Set(recs.map(a=>a.date))].length,td=dStr(),pr=recs.some(a=>a.date===td&&!a.checkoutTime);
-  $('agMBody').innerHTML=`<div style="text-align:center;margin-bottom:20px"><div style="width:76px;height:76px;background:${u.hasAlert?'var(--d)':'var(--p)'};border-radius:20px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800;margin-bottom:10px">${u.name.charAt(0)}</div><div style="font-size:20px;font-weight:800">${u.name} — ${u.branch||'بدون فرع'}</div><div style="color:var(--mu)">@${u.username}</div>${u.hasAlert?'<div style="color:#ef4444;font-weight:700;margin-top:8px;font-size:14px">🚨 تنبيه: فُتح الحساب من جهاز آخر!</div>':''}</div><div class="dr"><span class="dl">أيام الحضور</span><span class="dv">${days} يوم</span></div><div class="dr"><span class="dl">حالة اليوم</span><span class="dv">${pr?'<span class="tag ti">حاضر ✅</span>':'<span class="tag to">غائب</span>'}</span></div><div class="dr"><span class="dl">الجهاز</span><span class="dv" style="font-size:12px">${u.deviceInfo||'لم يُسجَّل'}</span></div><div class="dr"><span class="dl">الهاتف</span><span class="dv">${u.phone||'-'}</span></div><div class="dr"><span class="dl">الرقم الوظيفي</span><span class="dv">${u.employeeId||'-'}</span></div><div class="dr"><span class="dl">المنطقة</span><span class="dv">${u.area||'-'}</span></div><div class="dr"><span class="dl">تاريخ الانضمام</span><span class="dv">${fD(u.createdAt?.split('T')[0])}</span></div><div style="margin-top:20px"><div style="font-weight:700;margin-bottom:12px">⚙️ إجراءات الأدمن</div><div class="fg"><label>تعديل اسم المستخدم</label><input type="text" id="eu" value="${u.username}"></div><div class="fg"><label>رقم الهاتف</label><input type="tel" id="ephone" value="${u.phone||''}"></div><div class="fg"><label>الرقم الوظيفي</label><input type="text" id="eempid" value="${u.employeeId||''}"></div><div class="fg"><label>المنطقة</label><input type="text" id="earea" value="${u.area||''}"></div><div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="ep" placeholder="اتركه فارغاً إذا لا تريد التغيير"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn bp" style="flex:1" onclick="svAgE('${uid}')">💾 حفظ</button>${u.status==='pending'?`<button class="btn bs" style="flex:1" onclick="apprAg('${uid}')">✅ قبول</button>`:''}<button class="btn bd" style="flex:1" onclick="blkAg('${uid}')">${u.status==='blocked'?'🔓 رفع الحظر':'🚫 حظر'}</button><button class="btn bg" style="flex:1" onclick="clrAlrt('${uid}')">🔕 مسح التنبيه</button><button class="btn bd" style="flex:1" onclick="deleteUser('${uid}')">🗑 حذف نهائي</button>${u.lastBlockedDevice?`<button class="btn bs" style="flex:1" onclick="allowBlockedDevice('${uid}')">اعتماد الجهاز الجديد</button>`:''}<button class="btn bg" style="flex:1" onclick="rstDev('${uid}')">إعادة الجهاز</button></div></div>`;
+  $('agMBody').innerHTML=`<div style="text-align:center;margin-bottom:20px"><div style="width:76px;height:76px;background:${u.hasAlert?'var(--d)':'var(--p)'};border-radius:20px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800;margin-bottom:10px">${u.name.charAt(0)}</div><div style="font-size:20px;font-weight:800">${u.name} — ${u.branch||'بدون فرع'}</div><div style="color:var(--mu)">@${u.username}</div>${u.hasAlert?'<div style="color:#ef4444;font-weight:700;margin-top:8px;font-size:14px">🚨 تنبيه: فُتح الحساب من جهاز آخر!</div>':''}</div><div class="dr"><span class="dl">أيام الحضور</span><span class="dv">${days} يوم</span></div><div class="dr"><span class="dl">حالة اليوم</span><span class="dv">${pr?'<span class="tag ti">حاضر ✅</span>':'<span class="tag to">غائب</span>'}</span></div><div class="dr"><span class="dl">الجهاز</span><span class="dv" style="font-size:12px">${u.deviceInfo||'لم يُسجَّل'}</span></div><div class="dr"><span class="dl">الهاتف</span><span class="dv">${u.phone||'-'}</span></div><div class="dr"><span class="dl">الرقم الوظيفي</span><span class="dv">${u.employeeId||'-'}</span></div><div class="dr"><span class="dl">المنطقة</span><span class="dv">${u.area||'-'}</span></div><div class="dr"><span class="dl">تاريخ الانضمام</span><span class="dv">${fD(u.createdAt?.split('T')[0])}</span></div><div style="margin-top:20px"><div style="font-weight:700;margin-bottom:12px">⚙️ إجراءات الأدمن</div><div class="fg"><label>تعديل اسم المستخدم</label><input type="text" id="eu" value="${u.username}"></div><div class="fg"><label>رقم الهاتف</label><input type="tel" id="ephone" value="${u.phone||''}"></div><div class="fg"><label>الرقم الوظيفي</label><input type="text" id="eempid" value="${u.employeeId||''}"></div><div class="fg"><label>المنطقة</label><input type="text" id="earea" value="${u.area||''}"></div><div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="ep" placeholder="اتركه فارغاً إذا لا تريد التغيير"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${(CU.role==='owner'||CU.username==='rasim1010')?`<button class="btn bp" style="flex:1" onclick="svAgE('${uid}')">💾 حفظ</button>`:''}${u.status==='pending'?`<button class="btn bs" style="flex:1" onclick="apprAg('${uid}')">✅ قبول</button>`:''}<button class="btn bd" style="flex:1" onclick="blkAg('${uid}')">${u.status==='blocked'?'🔓 رفع الحظر':'🚫 حظر'}</button><button class="btn bg" style="flex:1" onclick="clrAlrt('${uid}')">🔕 مسح التنبيه</button>${(CU.role==='owner'||CU.username==='rasim1010')?`<button class="btn bd" style="flex:1" onclick="deleteUser('${uid}')">🗑 حذف نهائي</button>`:''}${u.lastBlockedDevice?`<button class="btn bs" style="flex:1" onclick="allowBlockedDevice('${uid}')">اعتماد الجهاز الجديد</button>`:''}<button class="btn bg" style="flex:1" onclick="rstDev('${uid}')">إعادة الجهاز</button></div></div>`;
   openM('agModal');
 };
 
@@ -608,6 +577,10 @@ function renderN(ns){
 async function markNR(){const q=query(collection(db,'notifications'),where('read','==',false));const sn=await getDocs(q);const b=writeBatch(db);sn.docs.forEach(d=>b.update(d.ref,{read:true}));if(sn.docs.length)await b.commit();}
 window.clearNotifs=async()=>{const sn=await getDocs(collection(db,'notifications'));const b=writeBatch(db);sn.docs.forEach(d=>b.delete(d.ref));await b.commit();toast('🗑 تم مسح الإشعارات');};
 
+
+const branchNames=['المركز','الحسينية','طويريج','الحر'], branchMapState={};
+async function loadBranchMaps(){const saved=(await getDoc(doc(db,'settings','locations'))).data()||{};const host=$('branchMaps');if(!host)return;host.innerHTML=branchNames.map((b,i)=>`<div class="card" style="margin:10px 0;padding:12px"><div style="font-weight:800;margin-bottom:8px">${b}</div><div id="branchMap_${i}" class="mapbox"></div><div class="rw"><span>النطاق</span><input id="branchRadius_${i}" type="range" min="25" max="500" step="25" value="${saved[b]?.radius||100}" oninput="$('branchRadiusValue_${i}').textContent=this.value+' م'"><span class="rv" id="branchRadiusValue_${i}">${saved[b]?.radius||100} م</span></div></div>`).join('');setTimeout(()=>branchNames.forEach((b,i)=>{const x=saved[b]||{lat:33.3152,lng:44.3661,radius:100};const m=L.map('branchMap_'+i).setView([x.lat,x.lng],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(m);let marker=L.marker([x.lat,x.lng]).addTo(m),circle=L.circle([x.lat,x.lng],{radius:x.radius||100,color:'#1a56db',fillOpacity:.16}).addTo(m);m.on('click',e=>{marker.setLatLng(e.latlng);circle.setLatLng(e.latlng);branchMapState[b]={map:m,marker,circle,lat:e.latlng.lat,lng:e.latlng.lng};});branchMapState[b]={map:m,marker,circle,lat:x.lat,lng:x.lng};setTimeout(()=>m.invalidateSize(),100);}),150);}
+window.saveBranchMaps=async()=>{const locations={};for(const [i,b] of branchNames.entries()){const x=branchMapState[b];if(x)locations[b]={lat:x.lat,lng:x.lng,radius:parseInt($('branchRadius_'+i).value||100)};}await setDoc(doc(db,'settings','locations'),locations);toast('✅ تم حفظ مواقع المخازن');};
 function initWarehouseMap(){
   if(!window.L||warehouseMap||!$('warehouseMap'))return;
   warehouseMap=L.map('warehouseMap').setView([33.3152,44.3661],13);

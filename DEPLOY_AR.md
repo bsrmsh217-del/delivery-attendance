@@ -1,1 +1,1 @@
-ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. تأكد من Secret FIREBASE_SERVICE_ACCOUNT في Vercel. الإصدار الجديد 2.0.5.
+ارفع محتويات هذا المجلد إلى جذر مستودع GitHub ثم Push origin. انتظر Vercel Ready. في Firebase Console > Firestore > Rules الصق firestore.rules واضغط Publish. تأكد من Secret FIREBASE_SERVICE_ACCOUNT في Vercel. الإصدار 2.0.6.
