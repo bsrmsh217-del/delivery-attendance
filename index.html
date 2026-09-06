@@ -244,7 +244,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 
 <div id="sec_agents" class="asec">
   <div class="pb" id="pb">⏳ <span id="pc">0</span> حساب بانتظار الموافقة</div>
-  <div class="stabs"><div class="stab active" onclick="swAgTab('active')">نشط</div><div class="stab" onclick="swAgTab('pending')">بانتظار الموافقة</div></div>
+  <div class="stabs"><div class="stab active" onclick="swAgTab('active')">نشط</div><div class="stab" onclick="swAgTab('pending')">بانتظار الموافقة</div><div class="stab" onclick="swAgTab('blocked')">معطّل</div></div>
   <div style="padding:14px">
     <input type="text" id="ags" placeholder="🔍 بحث عن مندوب..." oninput="renderAgs()" style="margin-bottom:12px">
     <div id="agList"></div>
@@ -289,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.12', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.13', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -529,10 +529,10 @@ window.showAD=id=>{
 
 window.manualCheckout=async id=>{const reason=prompt('اكتب سبب تسجيل الخروج اليدوي');if(!reason?.trim())return;await updateDoc(doc(db,'attendance',id),{checkoutTime:serverTimestamp(),manualCheckout:true,manualReason:reason.trim(),manualBy:CU.id,updatedAt:serverTimestamp()});const r=allA.find(x=>x.id===id);if(r?.agentId)await deleteDoc(doc(db,'openAttendance',r.agentId)).catch(()=>{});await addAudit('manual_checkout',id,reason.trim());toast('تم تسجيل الخروج اليدوي');closeM('attModal');};
 
-window.swAgTab=tab=>{agTab=tab;document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',(tab==='active')?i===0:i===1));renderAgs();};
+window.swAgTab=tab=>{agTab=tab;document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',tab==='active'?i===0:tab==='pending'?i===1:i===2));renderAgs();};
 window.renderAgs=()=>{
   const s=($('ags')?.value||'').toLowerCase();
-  const list=allU.filter(u=>{if(u.role!=='agent')return false;return agTab==='active'?(u.status==='active'):(u.status==='pending');}).filter(u=>!s||u.name.toLowerCase().includes(s)||u.username.includes(s)||(u.branch||'').includes(s)||(u.phone||'').includes(s)||(u.employeeId||'').toLowerCase().includes(s));
+  const list=allU.filter(u=>{if(u.role!=='agent')return false;return agTab==='active'?(u.status==='active'):agTab==='pending'?(u.status==='pending'):(u.status==='blocked');}).filter(u=>!s||u.name.toLowerCase().includes(s)||u.username.includes(s)||(u.branch||'').includes(s)||(u.phone||'').includes(s)||(u.employeeId||'').toLowerCase().includes(s));
   const c=$('agList');
   if(!list.length){c.innerHTML='<div class="empty"><div class="ei">👤</div>لا يوجد مندوبون</div>';return;}
   const td=dStr();
@@ -576,9 +576,10 @@ function renderN(ns){
   if(CU?.role==='admin'&&CU.username!=='rasim1010')ns=ns.filter(n=>n.branch===CU.branch);
   const c=$('nList');
   if(!ns.length){c.innerHTML='<div class="empty"><div class="ei">🔕</div>لا توجد إشعارات</div>';return;}
-  c.innerHTML=ns.map(n=>`<div class="ntf ${n.type}"><div style="font-size:22px;flex-shrink:0">${n.icon||'ℹ️'}</div><div><div style="font-weight:600;font-size:14px">${(n.text||'').replace(/\n/g,'<br>')}</div><div style="font-size:12px;color:var(--mu);margin-top:4px">🕐 ${fDT(n.createdAt)}</div></div></div>`).join('');
+  c.innerHTML=ns.map(n=>`<div class="ntf ${n.type}"><div style="font-size:22px;flex-shrink:0">${n.icon||'ℹ️'}</div><div style="flex:1"><div style="font-weight:600;font-size:14px">${(n.text||'').replace(/\n/g,'<br>')}</div><div style="font-size:12px;color:var(--mu);margin-top:4px">🕐 ${fDT(n.createdAt)}</div>${n.type==='alert'&&n.agentId?`<button class="btn bs" style="margin-top:8px;padding:7px 12px;font-size:12px" onclick="allowFromNotification('${n.agentId}','${n.id}')">✅ سماح للجهاز الآخر</button>`:''}</div></div>`).join('');
 }
 async function markNR(){const q=query(collection(db,'notifications'),where('read','==',false));const sn=await getDocs(q);const b=writeBatch(db);const docs=CU?.role==='admin'&&CU.username!=='rasim1010'?sn.docs.filter(d=>d.data().branch===CU.branch):sn.docs;docs.forEach(d=>b.update(d.ref,{read:true}));if(docs.length)await b.commit();}
+window.allowFromNotification=async(uid,nid)=>{try{await apiCall('/api/admin-user',{action:'allowDevice',uid});await deleteDoc(doc(db,'notifications',nid)).catch(()=>{});toast('✅ تم السماح للجهاز الآخر');}catch(e){toast(apiMsg(e),5000);}};
 window.clearNotifs=async()=>{const sn=await getDocs(collection(db,'notifications'));const b=writeBatch(db);sn.docs.forEach(d=>b.delete(d.ref));await b.commit();toast('🗑 تم مسح الإشعارات');};
 
 

@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
     if (!['admin', 'owner'].includes(profile.role) && profile.deviceId && profile.deviceId !== deviceId) {
       const now = admin.firestore.Timestamp.now();
       await ref.update({ hasAlert: true, lastBlockedDevice: deviceId, lastBlockedDeviceInfo: deviceInfo, lastBlockedAt: now });
-      await db.collection('notifications').add({ type: 'alert', icon: '🚨', text: `تنبيه أمني: المندوب "${profile.name}" حاول فتح حسابه من جهاز آخر. الجهاز: ${deviceInfo}`, read: false, createdAt: now.toDate().toISOString() });
+      await db.collection('notifications').add({ type: 'alert', icon: '🚨', branch: profile.branch || '', agentId: profile.id, text: `تنبيه أمني: المندوب "${profile.name}" — ${profile.branch || 'بدون فرع'} حاول فتح حسابه من جهاز آخر. الجهاز: ${deviceInfo}`, read: false, createdAt: now.toDate().toISOString() });
       return res.status(403).json({ ok: false, error: 'SECOND_DEVICE_BLOCKED' });
     }
     const sessionId = ['admin', 'owner'].includes(profile.role) ? null : crypto.randomUUID();
