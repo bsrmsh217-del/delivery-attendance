@@ -289,7 +289,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.6', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.7', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -395,7 +395,7 @@ async function loadTR(){
 function renderTR(recs){
   const c=$('todayR');
   if(!recs.length){c.innerHTML='<div class="empty"><div class="ei">📭</div>لا يوجد سجل اليوم</div>';return;}
-  c.innerHTML=recs.map(r=>`<div class="hi"><div class="hd ${r.checkoutTime?'out':'in'}"></div><div><div style="font-weight:700">▶ دخول: ${fT(r.checkinTime)}</div>${r.checkoutTime?`<div style="font-weight:700">◀ خروج: ${fT(r.checkoutTime)}</div>`:'<div style="color:#059669;font-size:13px;font-weight:600">🟢 لا يزال داخل المخزن</div>'}${r.checkoutTime?`<div style="font-size:13px;color:var(--p);font-weight:600;margin-top:3px">⏱ ${r.duration||dur(r.checkinTime,r.checkoutTime)}</div>`:''}</div></div>`).join('');
+  c.innerHTML=recs.map(r=>`<div class="hi"><div class="hd ${r.checkoutTime?'out':'in'}"></div><div><div style="font-weight:700">${r.agentName||CU.name} — ${r.branch||CU.branch||'بدون فرع'}</div><div style="font-weight:700">▶ دخول: ${fT(r.checkinTime)}</div>${r.checkoutTime?`<div style="font-weight:700">◀ خروج: ${fT(r.checkoutTime)}</div>`:'<div style="color:#059669;font-size:13px;font-weight:600">🟢 لا يزال داخل المخزن</div>'}${r.checkoutTime?`<div style="font-size:13px;color:var(--p);font-weight:600;margin-top:3px">⏱ ${r.duration||dur(r.checkinTime,r.checkoutTime)}</div>`:''}</div></div>`).join('');
 }
 
 async function updBtn(){
@@ -443,10 +443,10 @@ async function chkLoc(){
   try{
     if(!navigator.onLine){locOk=false;setLP('bad','لا يوجد اتصال بالإنترنت');return;}
     await refreshDeviceSecurity();if(securityState.mockLocation||securityState.developerOptions){locOk=false;insideSince=null;setLP('bad','الموقع الوهمي أو إعدادات المطور مفعّلة');$('mainBtn').disabled=true;return;}
-    const ls=await getDoc(doc(db,'settings','locations')),sn=ls.exists()&&ls.data()[CU.branch]?{exists:()=>true,data:()=>ls.data()[CU.branch]}:await getDoc(doc(db,'settings','warehouse'));
-    if(!sn.exists()||!sn.data().lat){setLP('bad','موقع المخزن غير محدد');return;}
-    const wh=sn.data(),d=dist(myL.lat,myL.lng,wh.lat,wh.lng),r=Number(wh.radius||100),accuracyOk=locAccuracy>0&&locAccuracy<=Math.min(50,r);
-    $('dstxt').textContent=`المسافة: ${d} م — الحد: ${r} م — دقة GPS: ${locAccuracy||'?'} م`;
+    const ls=await getDoc(doc(db,'settings','locations')),locs=ls.exists()?ls.data():{},candidates=Object.entries(locs).filter(([,w])=>Number.isFinite(Number(w.lat))&&Number.isFinite(Number(w.lng))).map(([name,w])=>({name,w,d:dist(myL.lat,myL.lng,w.lat,w.lng),r:Number(w.radius||100)})).sort((a,b)=>a.d-b.d),match=candidates.find(x=>x.d<=x.r);
+    if(!match){setLP('bad','خارج نطاق المخازن');$('dstxt').textContent='لا يوجد مخزن قريب ضمن النطاق';return;}
+    const {name:attendanceBranch,w:wh,d,r}=match,accuracyOk=locAccuracy>0&&locAccuracy<=Math.min(50,r);
+    $('dstxt').textContent=`${attendanceBranch} — المسافة: ${d} م — الحد: ${r} م — دقة GPS: ${locAccuracy||'?'} م`;
     if(d<=r&&accuracyOk){
       if(!insideSince){insideSince=Date.now();locOk=false;setLP('chk','اثبت داخل النطاق لمدة 3 ثوانٍ');clearTimeout(stabilityTimer);stabilityTimer=setTimeout(()=>{if(insideSince&&navigator.onLine){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}},3000);}
       else if(Date.now()-insideSince>=3000){locOk=true;setLP('ok',`داخل النطاق (${d}م)`);$('mainBtn').disabled=false;}
@@ -491,7 +491,7 @@ function refDash(){
   $('s0').textContent=pr.length;$('s1').textContent=ags.length;$('s2').textContent=tr.length;
   const pe=$('presNow');
   if(!pr.length){pe.innerHTML='<div class="empty"><div class="ei">📭</div>لا يوجد حضور الآن</div>';return;}
-  pe.innerHTML=pr.map(a=>`<div class="agr" style="cursor:default"><div class="av">${a.agentName?.charAt(0)||'؟'}</div><div style="flex:1"><div style="font-weight:700">${a.agentName}</div><div style="font-size:13px;color:var(--mu)">دخل: ${fT(a.checkinTime)}</div></div><div class="sd on"></div></div>`).join('');
+  pe.innerHTML=pr.map(a=>`<div class="agr" style="cursor:default"><div class="av">${a.agentName?.charAt(0)||'؟'}</div><div style="flex:1"><div style="font-weight:700">${a.agentName} — ${a.branch||'بدون فرع'}</div><div style="font-size:13px;color:var(--mu)">دخل: ${fT(a.checkinTime)}</div></div><div class="sd on"></div></div>`).join('');
 }
 
 window.gotoSec=name=>{
@@ -511,13 +511,13 @@ window.filterAtt=()=>{
   filteredA=d;renderTbl(d);
 };
 window.clearF=()=>{['fn','ff','ft','fs','fb'].forEach(id=>$(id).value='');window.filterAtt();};
-window.exportExcel=()=>{const rows=(filteredA.length?filteredA:allA).map(r=>({المندوب:r.agentName||'',المستخدم:r.username||'',التاريخ:r.date||'',الدخول:r.checkinTime?fT(r.checkinTime):'',الخروج:r.checkoutTime?fT(r.checkoutTime):'لم يسجل خروجًا',المدة:r.checkoutTime?(r.duration||dur(r.checkinTime,r.checkoutTime)):'',الحالة:r.checkoutTime?'مكتمل':'مفتوح'}));if(!rows.length){toast('لا توجد بيانات للتصدير');return;}const cols=Object.keys(rows[0]),esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"',csv='\uFEFF'+[cols,...rows.map(r=>cols.map(c=>r[c]))].map(x=>x.map(esc).join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`attendance-${dStr()}.csv`;a.click();URL.revokeObjectURL(a.href);addAudit('export_report','attendance',`${rows.length} records`);};
+window.exportExcel=()=>{const rows=(filteredA.length?filteredA:allA).map(r=>({المندوب:(r.agentName||'')+' — '+(r.branch||''),المستخدم:r.username||'',التاريخ:r.date||'',الدخول:r.checkinTime?fT(r.checkinTime):'',الخروج:r.checkoutTime?fT(r.checkoutTime):'لم يسجل خروجًا',المدة:r.checkoutTime?(r.duration||dur(r.checkinTime,r.checkoutTime)):'',الحالة:r.checkoutTime?'مكتمل':'مفتوح'}));if(!rows.length){toast('لا توجد بيانات للتصدير');return;}const cols=Object.keys(rows[0]),esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"',csv='\uFEFF'+[cols,...rows.map(r=>cols.map(c=>r[c]))].map(x=>x.map(esc).join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`attendance-${dStr()}.csv`;a.click();URL.revokeObjectURL(a.href);addAudit('export_report','attendance',`${rows.length} records`);};
 window.printReport=()=>{const d=filteredA.length?filteredA:allA,w=open('','_blank'),rows=d.map(r=>`<tr><td>${r.agentName||''}</td><td>${r.date||''}</td><td>${r.checkinTime?fT(r.checkinTime):''}</td><td>${r.checkoutTime?fT(r.checkoutTime):'لم يسجل'}</td><td>${r.checkoutTime?(r.duration||dur(r.checkinTime,r.checkoutTime)):'-'}</td></tr>`).join('');w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><title>تقرير الحضور</title><style>body{font-family:Arial;padding:30px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:right}</style></head><body><h2>تقرير حضور المندوبين</h2><p>تاريخ الطباعة: ${fDT(new Date())}</p><table><tr><th>المندوب</th><th>التاريخ</th><th>الدخول</th><th>الخروج</th><th>المدة</th></tr>${rows}</table></body></html>`);w.document.close();w.print();addAudit('print_report','attendance',`${d.length} records`);};
 
 function renderTbl(d){
   const tb=$('attTb');
   if(!d.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--mu)">لا توجد سجلات</td></tr>';return;}
-  tb.innerHTML=d.map(r=>`<tr><td><strong>${r.agentName||'-'}</strong><br><span style="font-size:12px;color:var(--mu)">@${r.username||''}</span></td><td>${fT(r.checkinTime)}<br><span style="font-size:11px;color:var(--mu)">${fD(r.date)}</span></td><td>${r.checkoutTime?fT(r.checkoutTime):'<span style="color:#d97706;font-size:12px">⚠️ لم يخرج</span>'}</td><td style="font-size:13px">${r.duration||(r.checkoutTime?'-':'<span style="color:#059669">جارٍ</span>')}</td><td>${r.checkoutTime?'<span class="tag to">خرج</span>':'<span class="tag ti">حاضر</span>'}</td><td><button class="btn bg" style="padding:6px 10px;font-size:12px;border-radius:8px" onclick="showAD('${r.id}')">تفاصيل</button></td></tr>`).join('');
+  tb.innerHTML=d.map(r=>`<tr><td><strong>${r.agentName||'-'} — ${r.branch||'بدون فرع'}</strong><br><span style="font-size:12px;color:var(--mu)">@${r.username||''}</span></td><td>${fT(r.checkinTime)}<br><span style="font-size:11px;color:var(--mu)">${fD(r.date)}</span></td><td>${r.checkoutTime?fT(r.checkoutTime):'<span style="color:#d97706;font-size:12px">⚠️ لم يخرج</span>'}</td><td style="font-size:13px">${r.duration||(r.checkoutTime?'-':'<span style="color:#059669">جارٍ</span>')}</td><td>${r.checkoutTime?'<span class="tag to">خرج</span>':'<span class="tag ti">حاضر</span>'}</td><td><button class="btn bg" style="padding:6px 10px;font-size:12px;border-radius:8px" onclick="showAD('${r.id}')">تفاصيل</button></td></tr>`).join('');
 }
 
 window.showAD=id=>{

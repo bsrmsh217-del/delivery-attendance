@@ -17,12 +17,14 @@ module.exports = async function handler(req, res) {
     const db = admin.firestore();
     const locationsSnap = await db.collection('settings').doc('locations').get();
     const legacySnap = await db.collection('settings').doc('warehouse').get();
-    const warehouse = locationsSnap.exists && profile.branch && locationsSnap.data()[profile.branch] ? locationsSnap.data()[profile.branch] : (legacySnap.exists ? legacySnap.data() : null);
-    if (!warehouse) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
-    const radius = Number(warehouse.radius || 100);
-    const distance = distanceMeters(Number(lat), Number(lng), Number(warehouse.lat), Number(warehouse.lng));
+    const locations = locationsSnap.exists ? locationsSnap.data() : {};
+    const candidates = Object.entries(locations).filter(([, w]) => Number.isFinite(Number(w.lat)) && Number.isFinite(Number(w.lng)));
+    if (!candidates.length && legacySnap.exists) candidates.push(['المخزن', legacySnap.data()]);
+    if (!candidates.length) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
+    const matched = candidates.map(([name, w]) => ({ name, warehouse: w, distance: distanceMeters(Number(lat), Number(lng), Number(w.lat), Number(w.lng)), radius: Number(w.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
+    if (!matched) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE' });
+    const { name: attendanceBranch, warehouse, distance, radius } = matched;
     const maximumAccuracy = Math.min(50, radius);
-    if (distance > radius) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE', distance, radius });
     if (Number(accuracy) <= 0 || Number(accuracy) > maximumAccuracy) {
       return res.status(403).json({ ok: false, error: 'GPS_ACCURACY_TOO_LOW', accuracy, maximumAccuracy });
     }
@@ -39,7 +41,7 @@ module.exports = async function handler(req, res) {
           agentId: decoded.uid,
           agentName: profile.name,
           username: profile.username,
-          branch: profile.branch || '',
+          branch: attendanceBranch,
           date: baghdadDate(now.toDate()),
           checkinTime: now,
           checkoutTime: null,
