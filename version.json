@@ -1,8 +1,8 @@
 {
-  "version": "2.0.40",
-  "versionCode": 60,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.40.apk",
-  "notes": "إخفاء حسابات الأدمنية من بقية التبويبات.",
+  "version": "2.0.41",
+  "versionCode": 61,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.41.apk",
+  "notes": "إظهار التحديث الإجباري أثناء بقاء المستخدم مسجلاً للدخول.",
   "required": false,
-  "publishedAt": "2026-09-10T00:57:00+03:00"
+  "publishedAt": "2026-09-10T01:00:00+03:00"
 }

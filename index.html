@@ -125,11 +125,15 @@ input[type=range]{flex:1;accent-color:var(--p);}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 24px;border-radius:50px;font-size:14px;font-weight:600;z-index:9999;display:none;max-width:340px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3);}.netbar{display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:#991b1b;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:700}.upcard{display:none;background:#eff6ff;border:2px solid #93c5fd;color:#1e40af;border-radius:12px;padding:12px;margin-bottom:14px;text-align:center}.mapbox{height:280px;border-radius:14px;overflow:hidden;border:2px solid var(--bdr);margin:12px 0;background:#e5e7eb}.leaflet-container{font-family:inherit;z-index:1}
 .ib2{background:var(--pl);border-radius:10px;padding:12px 14px;font-size:13px;color:#1e40af;margin-bottom:14px;border-right:3px solid var(--p);}
 .sec-bdg{display:inline-flex;align-items:center;gap:5px;background:var(--sl);color:#065f46;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin-top:8px;}
+.force-update{display:none;position:fixed;inset:0;background:rgba(17,24,39,.72);z-index:11000;align-items:center;justify-content:center;padding:20px;}
+.force-update.open{display:flex;}
+.force-update-box{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center;}
 </style>
 </head>
 <body>
 
 <div id="netbar" class="netbar">لا يوجد اتصال بالإنترنت — التسجيل متوقف لحين عودة الاتصال</div>
+<div id="forceUpdateCard" class="force-update"><div class="force-update-box"><div style="font-size:42px;margin-bottom:10px">⬆️</div><div style="font-size:20px;font-weight:800;margin-bottom:8px">تحديث إجباري متوفر</div><div id="forceUpdateText" style="color:var(--mu);font-size:14px;line-height:1.7;margin-bottom:16px">يجب تحديث التطبيق للاستمرار.</div><button class="btn bp bb" onclick="downloadUpdate()">تنزيل وتثبيت التحديث</button></div></div>
 <div id="LS"><div style="font-size:54px">🚚</div><div class="bspin"></div><div style="font-size:16px;font-weight:700">جاري التحميل...</div></div>
 
 <!-- LOGIN -->
@@ -301,7 +305,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.40', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.41', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -327,8 +331,8 @@ function openM(id){$(id).classList.add('open');}
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 function hideLd(){$('LS').classList.add('hide');setTimeout(()=>$('LS').style.display='none',400);}
 function setupNetworkState(){const up=()=>{$('netbar').style.display=navigator.onLine?'none':'block';if($('mainBtn')&&!navigator.onLine)$('mainBtn').disabled=true;};addEventListener('online',()=>{up();toast('عاد الاتصال بالإنترنت');if(CU?.role!=='admin')startLoc();});addEventListener('offline',()=>{up();locOk=false;toast('انقطع الإنترنت — التسجيل متوقف');});up();}
-let pendingUpdateUrl='';
-window.checkForUpdates=async(manual=false)=>{try{const r=await fetch(UPDATE_MANIFEST+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('manifest');const v=await r.json();const newer=String(v.version||'0').localeCompare(APP_VERSION,undefined,{numeric:true})>0;if(newer&&v.apkUrl){pendingUpdateUrl=v.apkUrl;$('updateCard').style.display='block';$('updateText').textContent=`الإصدار ${v.version}: ${v.notes||'تحسينات جديدة'}`;if(manual)toast('يتوفر تحديث جديد');}else if(manual)toast('أنت تستخدم أحدث إصدار');}catch(e){if(manual)toast('تعذر فحص التحديث الآن');}};
+let pendingUpdateUrl='',updateTimer=null;
+window.checkForUpdates=async(manual=false)=>{try{const r=await fetch(UPDATE_MANIFEST+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('manifest');const v=await r.json();const newer=String(v.version||'0').localeCompare(APP_VERSION,undefined,{numeric:true})>0;if(newer&&v.apkUrl){pendingUpdateUrl=v.apkUrl;$('updateCard').style.display='block';$('updateText').textContent=`الإصدار ${v.version}: ${v.notes||'تحسينات جديدة'}`;if(CU&&IS_NATIVE){$('forceUpdateText').textContent=`الإصدار ${v.version} متوفر. يجب تنزيله وتثبيته قبل متابعة استخدام التطبيق.`;$('forceUpdateCard').classList.add('open');}if(manual)toast('يتوفر تحديث جديد');}else if(manual)toast('أنت تستخدم أحدث إصدار');}catch(e){if(manual)toast('تعذر فحص التحديث الآن');}};
 window.downloadUpdate=async()=>{if(!IS_NATIVE||!pendingUpdateUrl)return;try{const p=window.Capacitor?.Plugins?.DeviceSecurity;if(p)await p.openUpdate({url:pendingUpdateUrl});else location.href=pendingUpdateUrl;}catch(e){location.href=pendingUpdateUrl;}};
 async function addAudit(action,target='',details=''){try{await addDoc(collection(db,'auditLogs'),{action,target,details,actorId:CU?.id||null,actorName:CU?.name||'النظام',actorUsername:CU?.username||'',deviceId:getDid(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function logLoginAttempt(username,success,reason=''){try{await addDoc(collection(db,'loginAttempts'),{username,success,reason,deviceId:getDid(),deviceInfo:getDinfo(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
@@ -339,10 +343,10 @@ function isRasimPrimary(){return String(CU?.username||'').trim().toLowerCase()==
 let CU=null,allU=[],allUsersRaw=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
 
 async function init(){
-  $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE)checkForUpdates(false);else $('updateCard')&&($('updateCard').style.display='none');
+  $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE){checkForUpdates(false);updateTimer=setInterval(()=>checkForUpdates(false),5*60*1000);}else $('updateCard')&&($('updateCard').style.display='none');
   try{
     await auth.authStateReady();const sv=localStorage.getItem('_s');
-    if(sv&&auth.currentUser){const s=JSON.parse(sv);if(s.uid===auth.currentUser.uid&&s.did===getDid()){const sn=await getDoc(doc(db,'users',s.uid));if(sn.exists()){const u={id:sn.id,...sn.data(),username:String(sn.data().username||'').trim().toLowerCase()};if(u.status==='active'&&(!u.activeSessionId||['admin','owner'].includes(u.role)||u.activeSessionId===s.sessionId)){CU=u;sessionId=s.sessionId||null;hideLd();if(['admin','owner'].includes(u.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}return;}}}}
+    if(sv&&auth.currentUser){const s=JSON.parse(sv);if(s.uid===auth.currentUser.uid&&s.did===getDid()){const sn=await getDoc(doc(db,'users',s.uid));if(sn.exists()){const u={id:sn.id,...sn.data(),username:String(sn.data().username||'').trim().toLowerCase()};if(u.status==='active'&&(!u.activeSessionId||['admin','owner'].includes(u.role)||u.activeSessionId===s.sessionId)){CU=u;sessionId=s.sessionId||null;hideLd();if(['admin','owner'].includes(u.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}if(IS_NATIVE)checkForUpdates(false);return;}}}}
     localStorage.removeItem('_s');if(auth.currentUser)await signOut(auth);
   }catch(e){localStorage.removeItem('_s');}
   hideLd();showScr('loginScreen');
@@ -364,7 +368,7 @@ window.doLogin=async()=>{
     if(!profile){const ps=await getDoc(doc(db,'users',credential.user.uid));if(ps.exists())profile={id:ps.id,...ps.data()};}
     if(!profile?.role)throw Error('PROFILE_NOT_FOUND');
     CU={id:credential.user.uid,...profile};sessionId=session.sessionId||null;localStorage.setItem('_s',JSON.stringify({uid:CU.id,did:getDid(),sessionId}));
-    if(['admin','owner'].includes(CU.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}toast(`مرحباً ${CU.name}${CU.branch?' - '+CU.branch:''}!`);
+    if(['admin','owner'].includes(CU.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}if(IS_NATIVE)checkForUpdates(false);toast(`مرحباً ${CU.name}${CU.branch?' - '+CU.branch:''}!`);
   }catch(e){try{await signOut(auth);}catch(_){}const m=e.code==='auth/invalid-credential'?'اسم المستخدم أو كلمة المرور غير صحيحة':apiMsg(e);sErr('lerr',m);}
   btn.disabled=false;btn.innerHTML='دخول';
 };
