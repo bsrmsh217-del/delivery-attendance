@@ -282,10 +282,10 @@ input[type=range]{flex:1;accent-color:var(--p);}
   <div class="card" id="selfAccountCard"><div class="ct">👤 تعديل حسابي</div><div class="ib2">متاح للـOwner والأدمن الأول فقط. يمكنك تعديل الاسم والمعرف والرمز.</div><div class="fg"><label>الاسم</label><input id="self_name" type="text"></div><div class="fg"><label>المعرف</label><input id="self_username" type="text" autocapitalize="none"></div><div class="fg"><label>رمز جديد (اختياري)</label><input id="self_password" type="password" placeholder="اتركه فارغاً إذا لا تريد تغييره"></div><button class="btn bp bb" onclick="saveSelfAccount()">💾 حفظ تعديل الحساب</button></div>
   <div class="card"><div class="ct">🗓️ الإجازات والملاحظات</div><div class="fg"><label>المندوب</label><select id="leaveAgent"></select></div><div style="display:flex;gap:8px"><div class="fg" style="flex:1"><label>من</label><input id="leaveFrom" type="date"></div><div class="fg" style="flex:1"><label>إلى</label><input id="leaveTo" type="date"></div></div><div class="fg"><label>السبب</label><input id="leaveReason" type="text" placeholder="سبب الإجازة أو الملاحظة"></div><button class="btn bp bb" onclick="saveLeave()">حفظ الإجازة</button><div id="leaveList" style="margin-top:16px"></div></div>
   <div class="card"><div class="ct">🔄 تحديث التطبيق</div><div class="dr"><span class="dl">الإصدار الحالي</span><span class="dv" id="appVer">1.0.0</span></div><div class="ib2" style="margin-top:12px">تحديثات الواجهة تصل عند نشر الملفات على الموقع. وإذا تغيّرت مكونات Android، يظهر للمندوب رابط تنزيل APK الجديد وتأكيد التثبيت من النظام.</div><button class="btn bp bb" onclick="checkForUpdates(true)">فحص وجود تحديث</button></div>
-</div>
-</div>
-<div id="sec_adminaccounts" class="asec"><div class="card" id="adminAccountsCard"><div class="ct">🛡️ حسابات الأدمنية وتعديلها</div><div class="ib2">خاص بالـOwner والأدمن الأول. يمكن تعديل الاسم والمعرف والرمز والفرع.</div><div id="adminAccountsList"><div class="empty">جاري التحميل...</div></div></div></div>
+ </div>
+ <div id="sec_adminaccounts" class="asec"><div class="card" id="adminAccountsCard"><div class="ct">🛡️ حسابات الأدمنية وتعديلها</div><div class="ib2">خاص بالـOwner والأدمن الأول. يمكن تعديل الاسم والمعرف والرمز والفرع.</div><div id="adminAccountsList"><div class="empty">جاري التحميل...</div></div></div></div>
 <div id="sec_adminlogs" class="asec"><div class="card"><div class="ct">🧾 تحركات الأدمنية</div><div class="ib2">هذا القسم خاص بالـOwner فقط ويعرض تحركات الأدمنية فقط ويتزامن مباشرة.</div><div class="fbar"><input id="auditAdminFilter" placeholder="اسم الأدمن أو المعرف" oninput="renderOwnerAudit()"><input id="auditActionFilter" placeholder="نوع العملية" oninput="renderOwnerAudit()"><input id="auditDateFilter" type="date" onchange="renderOwnerAudit()"><button class="btn bg" onclick="clearAuditFilters()">مسح الفلترة</button></div><div id="ownerAuditList"><div class="empty">جاري التحميل...</div></div></div></div>
+</div>
 
 <div class="ov" id="agModal"><div class="modal"><div class="mhdr"><div class="mt">👤 تفاصيل المندوب</div><button class="cb2" onclick="closeM('agModal')">✕</button></div><div id="agMBody"></div></div></div>
 <div class="ov" id="attModal"><div class="modal"><div class="mhdr"><div class="mt">📋 تفاصيل الحضور</div><button class="cb2" onclick="closeM('attModal')">✕</button></div><div id="attMBody"></div></div></div>
@@ -301,7 +301,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.36', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.37', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
