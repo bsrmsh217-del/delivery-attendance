@@ -295,7 +295,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.25', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.26', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -329,7 +329,7 @@ async function logLoginAttempt(username,success,reason=''){try{await addDoc(coll
 async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type':'application/json'};if(needsAuth){if(!auth.currentUser)throw Error('UNAUTHORIZED');headers.Authorization='Bearer '+await auth.currentUser.getIdToken();}const url=path.startsWith('http')?path:`${API_ORIGIN}${path}`;const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'SERVER_ERROR');return d;}
 const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق المخزن',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
 
-let CU=null,allU=[],allA=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
+let CU=null,allU=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
 
 async function init(){
   $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE)checkForUpdates(false);else $('updateCard')&&($('updateCard').style.display='none');
@@ -467,7 +467,7 @@ function initAdmin(){gotoSec('dashboard');const primary=CU.role==='owner'||CU.us
 function applyUsersSnapshot(sn){
   allU=sn.docs.map(d=>({id:d.id,...d.data()}));
   if(CU?.role==='admin'&&!(['rasim1010'].includes(CU.username)||CU.adminLevel==='primary'))allU=allU.filter(u=>u.role==='agent'&&u.branch===CU.branch);
-  refDash();renderAgs();updPB();if(CU?.role==='owner'||CU?.username==='rasim1010'||CU?.adminLevel==='primary')loadAdminAccounts();
+  syncAttendanceView();refDash();renderAgs();updPB();if(CU?.role==='owner'||CU?.username==='rasim1010'||CU?.adminLevel==='primary')loadAdminAccounts();
   const la=$('leaveAgent');
   if(la)la.innerHTML='<option value="">اختر المندوب</option>'+allU.filter(u=>u.role!=='admin').map(u=>`<option value="${u.id}">${u.name} (@${u.username})</option>`).join('');
 }
@@ -479,9 +479,10 @@ async function loadAllU(){
   try{applyUsersSnapshot(await getDocs(collection(db,'users')));}catch(e){console.error('users load',e);toast('تعذر تحميل قائمة المندوبين',5000);}
 }
 
+function syncAttendanceView(){const primary=CU?.role==='owner'||CU?.username==='rasim1010'||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const ids=new Set(allU.filter(u=>u.role==='agent'&&u.branch===CU.branch).map(u=>u.id));allA=allAttendanceRaw.filter(a=>a.branch===CU.branch||ids.has(a.agentId));}else allA=[...allAttendanceRaw];refDash();filterAtt();}
 function subAtt(){
   if(aU)aU();
-  aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc')),sn=>{allA=sn.docs.map(d=>({id:d.id,...d.data()}));if(CU?.role==='admin'&&!(['rasim1010'].includes(CU.username)||CU.adminLevel==='primary')){const ids=new Set(allU.filter(u=>u.role==='agent'&&u.branch===CU.branch).map(u=>u.id));allA=allA.filter(a=>a.branch===CU.branch||ids.has(a.agentId));}refDash();filterAtt();});
+  aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc')),sn=>{allAttendanceRaw=sn.docs.map(d=>({id:d.id,...d.data()}));syncAttendanceView();});
 }
 
 function subN(){
