@@ -74,7 +74,8 @@ input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px
 .nb{padding:8px 13px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;transition:.2s;background:var(--bg);color:var(--mu);font-family:inherit;}
 .nb.active{background:var(--p);color:#fff;}
 .asec{display:none;flex:1;overflow-y:auto;padding-bottom:24px;}
-.asec.active{display:block;}
+.asec.active{display:block!important;min-height:calc(100vh - 120px);}
+#adminScreen{min-height:100vh;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px;}
 .sc{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh);text-align:center;}
 .sn{font-size:34px;font-weight:800;}.sl{font-size:12px;color:var(--mu);margin-top:4px;}
@@ -294,7 +295,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.22', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.23', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -461,12 +462,12 @@ async function chkLoc(){
 
 function setLP(t,tx){const p=$('lpill');p.className='lpill '+t;$('ltxt').textContent=tx;}
 
-function initAdmin(){const primary=CU.role==='owner'||CU.username==='rasim1010'||CU.adminLevel==='primary';const secondary=CU.role==='admin'&&!primary;['navAgents','navNotifications','navLocation','navManagement'].forEach(id=>{if($(id))$(id).style.display=secondary?'none':'';});if($('nBtn'))$('nBtn').style.display=secondary?'none':'';if($('ownerAuditNav'))$('ownerAuditNav').style.display=CU.role==='owner'?'block':'none';if($('newAccountCard'))$('newAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';if($('adminAccountsCard'))$('adminAccountsCard').style.display=(CU.role==='owner'||primary)?'block':'none';subUsers();subAtt();if(!secondary)subN();if(!secondary){loadBranchMaps();loadManagement();loadAdminAccounts();}setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
+function initAdmin(){gotoSec('dashboard');const primary=CU.role==='owner'||CU.username==='rasim1010'||CU.adminLevel==='primary';const secondary=CU.role==='admin'&&!primary;['navAgents','navNotifications','navLocation','navManagement'].forEach(id=>{if($(id))$(id).style.display=secondary?'none':'';});if($('nBtn'))$('nBtn').style.display=secondary?'none':'';if($('ownerAuditNav'))$('ownerAuditNav').style.display=CU.role==='owner'?'block':'none';if($('newAccountCard'))$('newAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';if($('adminAccountsCard'))$('adminAccountsCard').style.display=(CU.role==='owner'||primary)?'block':'none';subUsers();subAtt();if(!secondary)subN();if(!secondary){loadBranchMaps();loadManagement();loadAdminAccounts();}setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
 
 function applyUsersSnapshot(sn){
   allU=sn.docs.map(d=>({id:d.id,...d.data()}));
   if(CU?.role==='admin'&&!(['rasim1010'].includes(CU.username)||CU.adminLevel==='primary'))allU=allU.filter(u=>u.role==='agent'&&u.branch===CU.branch);
-  refDash();renderAgs();updPB();
+  refDash();renderAgs();updPB();if(CU?.role==='owner'||CU?.username==='rasim1010'||CU?.adminLevel==='primary')loadAdminAccounts();
   const la=$('leaveAgent');
   if(la)la.innerHTML='<option value="">اختر المندوب</option>'+allU.filter(u=>u.role!=='admin').map(u=>`<option value="${u.id}">${u.name} (@${u.username})</option>`).join('');
 }
