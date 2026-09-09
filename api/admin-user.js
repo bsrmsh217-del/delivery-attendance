@@ -19,15 +19,19 @@ module.exports = async function handler(req, res) {
     }
     if (action === 'createUser') {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;
-      const requestedRole = role === 'primary_admin' ? 'admin' : role, adminLevel = role === 'primary_admin' ? 'primary' : 'secondary';
+      const requestedRole = role === 'primary_admin' ? 'admin' : String(role || 'admin').trim(), adminLevel = role === 'primary_admin' ? 'primary' : 'secondary', branchNorm = String(branch || '').trim(), usernameNormInput = String(username || '').trim().toLowerCase(), passwordNorm = String(password || '');
       if (requestedRole === 'agent' && !isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
       if (requestedRole === 'admin' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
-      if (!['admin', 'agent'].includes(requestedRole) || !String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(String(username || '').toLowerCase()) || String(password || '').length < 8 || (requestedRole === 'admin' ? (adminLevel === 'primary' ? (branch === '' || BRANCHES.includes(branch)) : BRANCHES.includes(branch)) : BRANCHES.includes(branch))) return res.status(400).json({ ok: false, error: 'INVALID_USER_DATA' });
-      const usernameNorm = String(username).toLowerCase(), lockRef = db.collection('usernames').doc(usernameNorm);
+      if (!['admin', 'agent'].includes(requestedRole)) return res.status(400).json({ ok: false, error: 'INVALID_ROLE' });
+      if (!String(name || '').trim()) return res.status(400).json({ ok: false, error: 'NAME_REQUIRED' });
+      if (!/^[a-z0-9_]{3,32}$/.test(usernameNormInput)) return res.status(400).json({ ok: false, error: 'INVALID_USERNAME' });
+      if (passwordNorm.length < 6) return res.status(400).json({ ok: false, error: 'PASSWORD_MIN_6' });
+      if ((requestedRole === 'admin' && adminLevel === 'secondary' && !BRANCHES.includes(branchNorm)) || (requestedRole === 'admin' && adminLevel === 'primary' && branchNorm !== '' && !BRANCHES.includes(branchNorm)) || (requestedRole === 'agent' && !BRANCHES.includes(branchNorm))) return res.status(400).json({ ok: false, error: 'BRANCH_REQUIRED' });
+      const usernameNorm = usernameNormInput, lockRef = db.collection('usernames').doc(usernameNorm);
       if ((await lockRef.get()).exists) return res.status(409).json({ ok: false, error: 'USERNAME_TAKEN' });
-      const email = `${usernameNorm}@deliveryattendance.app`, au = await admin.auth().createUser({ email, password: String(password), displayName: String(name).trim() });
+      const email = `${usernameNorm}@deliveryattendance.app`, au = await admin.auth().createUser({ email, password: passwordNorm, displayName: String(name).trim() });
       const now = admin.firestore.Timestamp.now();
-      try { await db.runTransaction(async tx => { if ((await tx.get(lockRef)).exists) throw Object.assign(new Error('USERNAME_TAKEN'), { statusCode: 409 }); tx.create(lockRef, { userId: au.uid, createdAt: now }); tx.create(db.collection('users').doc(au.uid), { authUid: au.uid, email, username: usernameNorm, name: String(name).trim(), phone, employeeId, area, branch: requestedRole === 'agent' || adminLevel === 'secondary' ? branch : '', role: requestedRole, ...(requestedRole === 'admin' ? { adminLevel } : {}), status: 'active', deviceId: null, deviceInfo: null, activeSessionId: null, hasAlert: false, createdAt: now, createdBy: actor.id }); }); } catch (e) { await admin.auth().deleteUser(au.uid); throw e; }
+      try { await db.runTransaction(async tx => { if ((await tx.get(lockRef)).exists) throw Object.assign(new Error('USERNAME_TAKEN'), { statusCode: 409 }); tx.create(lockRef, { userId: au.uid, createdAt: now }); tx.create(db.collection('users').doc(au.uid), { authUid: au.uid, email, username: usernameNorm, name: String(name).trim(), phone, employeeId, area, branch: requestedRole === 'agent' || adminLevel === 'secondary' ? branchNorm : '', role: requestedRole, ...(requestedRole === 'admin' ? { adminLevel } : {}), status: 'active', deviceId: null, deviceInfo: null, activeSessionId: null, hasAlert: false, createdAt: now, createdBy: actor.id }); }); } catch (e) { await admin.auth().deleteUser(au.uid); throw e; }
       await db.collection('auditLogs').add({ action: `create_${role}`, actorId: actor.id, actorName: actor.name, actorUsername: actor.username, target: au.uid, details: usernameNorm, createdAt: now });
       return res.status(201).json({ ok: true, uid: au.uid });
     }

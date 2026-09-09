@@ -296,7 +296,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.30', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.31', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -567,7 +567,7 @@ window.svAgE=async uid=>{
   toast('✅ تم حفظ التعديلات');closeM('agModal');await loadAllU();
 };
 window.bootstrapOwner=async()=>{try{await apiCall('/api/admin-user',{action:'bootstrapOwner'});toast('✅ تم إنشاء owner123 والرمز 123123');}catch(e){toast(apiMsg(e),5000);}};
-window.createManagedUser=async()=>{const role=$('newRole').value;if(role==='agent'&&CU.role!=='owner'){toast('إنشاء المندوبين للـOwner فقط');return;}try{await apiCall('/api/admin-user',{action:'createUser',role,name:$('newName').value.trim(),username:$('newUsername').value.trim().toLowerCase(),password:$('newPassword').value,branch:$('newBranch').value});toast('✅ تم إنشاء الحساب');['newName','newUsername','newPassword'].forEach(id=>$(id).value='');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
+window.createManagedUser=async()=>{const role=$('newRole').value;if(role==='agent'&&CU.role!=='owner'){toast('إنشاء المندوبين للـOwner فقط');return;}try{await apiCall('/api/admin-user',{action:'createUser',role,name:$('newName').value.trim(),username:$('newUsername').value.trim().toLowerCase(),password:$('newPassword').value,branch:$('newBranch').value});toast('✅ تم إنشاء الحساب');['newName','newUsername','newPassword'].forEach(id=>$(id).value='');await loadAllU();}catch(e){const m={INVALID_ROLE:'نوع الحساب غير صحيح',NAME_REQUIRED:'اكتب اسم الحساب',INVALID_USERNAME:'المعرف يجب أن يكون إنكليزيًا من 3 إلى 32 حرفاً أو رقماً',PASSWORD_MIN_6:'الرمز يجب أن يكون 6 أحرف على الأقل',BRANCH_REQUIRED:'اختر الفرع قبل إنشاء الحساب',USERNAME_TAKEN:'هذا المعرف مستخدم مسبقاً'};toast(m[e?.message]||m[e?.error]||apiMsg(e),5000);}};
 window.deleteUser=async uid=>{if(!confirm('حذف نهائي لكل بيانات الحساب وسجلاته؟'))return;try{await apiCall('/api/admin-user',{action:'deleteUser',uid});toast('تم الحذف النهائي');closeM('agModal');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
 window.apprAg=async uid=>{await apiCall('/api/admin-user',{action:'approve',uid});toast('تمت الموافقة');closeM('agModal');await loadAllU();};
 window.blkAg=async uid=>{const u=allU.find(x=>x.id===uid);const action=u.status==='blocked'?'unblock':'block';await apiCall('/api/admin-user',{action,uid});toast(action==='block'?'محظور':'رُفع الحظر');closeM('agModal');await loadAllU();};
