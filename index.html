@@ -296,7 +296,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.29', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.30', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -482,7 +482,7 @@ async function loadAllU(){
   try{applyUsersSnapshot(await getDocs(collection(db,'users')));}catch(e){console.error('users load',e);toast('تعذر تحميل قائمة المندوبين',5000);}
 }
 
-function syncAttendanceView(){const primary=CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const ids=new Set(allUsersRaw.filter(u=>u.role==='agent'&&u.branch===CU.branch).map(u=>u.id));allA=allAttendanceRaw.filter(a=>a.branch===CU.branch||ids.has(a.agentId));}else allA=[...allAttendanceRaw];refDash();filterAtt();}
+function syncAttendanceView(){const primary=CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const branch=String(CU.branch||'').trim();const agents=allUsersRaw.filter(u=>u.role==='agent'&&String(u.branch||'').trim()===branch);const ids=new Set(agents.map(u=>u.id)),names=new Set(agents.map(u=>String(u.name||'').trim())),users=new Set(agents.map(u=>String(u.username||'').trim().toLowerCase()));const matched=allAttendanceRaw.filter(a=>String(a.branch||'').trim()===branch||ids.has(a.agentId)||names.has(String(a.agentName||'').trim())||users.has(String(a.username||'').trim().toLowerCase()));if(agents.length||matched.length||!allA.length)allA=matched;}else allA=[...allAttendanceRaw];refDash();filterAtt();}
 function subAtt(){
   if(aU)aU();
   aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc')),sn=>{allAttendanceRaw=sn.docs.map(d=>({id:d.id,...d.data()}));syncAttendanceView();});
