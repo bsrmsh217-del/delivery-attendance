@@ -76,8 +76,8 @@ input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px
 .nb.active{background:var(--p);color:#fff;}
 .asec{display:none;flex:1;overflow:visible;padding-bottom:24px;min-height:0;}
 .asec.active{display:block!important;min-height:0;}
-#sec_adminaccounts{padding-top:0;}
-#sec_adminaccounts > .card{margin-top:14px;}
+#sec_adminaccounts{display:block!important;flex:0 0 auto;padding:0 0 14px;min-height:0!important;}
+#sec_adminaccounts > .card{margin:0 14px;}
 #adminScreen{min-height:100vh;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px;}
 .sc{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh);text-align:center;}
@@ -299,7 +299,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.34', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.35', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 

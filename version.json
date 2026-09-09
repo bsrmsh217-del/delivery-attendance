@@ -1,8 +1,8 @@
 {
-  "version": "2.0.34",
-  "versionCode": 54,
+  "version": "2.0.35",
+  "versionCode": 55,
   "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
-  "notes": "إصلاح الفراغ الأبيض ومحاذاة قسم حسابات الأدمنية.",
+  "notes": "إلغاء تمدد قسم حسابات الأدمنية وإزالة الفراغ العلوي والسفلي.",
   "required": false,
-  "publishedAt": "2026-09-09T22:48:00+03:00"
+  "publishedAt": "2026-09-09T23:07:00+03:00"
 }
