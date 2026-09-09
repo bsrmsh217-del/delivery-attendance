@@ -31,7 +31,7 @@ async function requireAdmin(req) {
   return user;
 }
 function isOwner(profile) { return profile?.role === 'owner'; }
-function isPrimaryAdmin(profile) { return profile?.role === 'admin' && profile?.username === 'rasim1010'; }
+function isPrimaryAdmin(profile) { return profile?.role === 'admin' && (profile?.username === 'rasim1010' || profile?.adminLevel === 'primary'); }
 function distanceMeters(lat1, lng1, lat2, lng2) {
   const toRad = value => value * Math.PI / 180, radius = 6371000;
   const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
