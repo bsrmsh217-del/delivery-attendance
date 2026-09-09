@@ -1,8 +1,8 @@
 {
-  "version": "2.0.38",
-  "versionCode": 58,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
-  "notes": "تصحيح DOM تلقائي لمنع تكرار حسابات الأدمنية داخل التحركات.",
+  "version": "2.0.39",
+  "versionCode": 59,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.39.apk",
+  "notes": "إصلاح تحديث APK وتنزيل النسخة الصحيحة مع آخر التعديلات.",
   "required": false,
-  "publishedAt": "2026-09-09T23:35:00+03:00"
+  "publishedAt": "2026-09-10T00:49:00+03:00"
 }
