@@ -294,7 +294,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.21', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.22', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -334,7 +334,7 @@ async function init(){
   $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE)checkForUpdates(false);else $('updateCard')&&($('updateCard').style.display='none');
   try{
     await auth.authStateReady();const sv=localStorage.getItem('_s');
-    if(sv&&auth.currentUser){const s=JSON.parse(sv);if(s.uid===auth.currentUser.uid&&s.did===getDid()){const sn=await getDoc(doc(db,'users',s.uid));if(sn.exists()){const u={id:sn.id,...sn.data()};if(u.status==='active'&&(!u.activeSessionId||u.role==='admin'||u.activeSessionId===s.sessionId)){CU=u;sessionId=s.sessionId||null;hideLd();if(u.role==='admin'){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}return;}}}}
+    if(sv&&auth.currentUser){const s=JSON.parse(sv);if(s.uid===auth.currentUser.uid&&s.did===getDid()){const sn=await getDoc(doc(db,'users',s.uid));if(sn.exists()){const u={id:sn.id,...sn.data()};if(u.status==='active'&&(!u.activeSessionId||['admin','owner'].includes(u.role)||u.activeSessionId===s.sessionId)){CU=u;sessionId=s.sessionId||null;hideLd();if(['admin','owner'].includes(u.role)){showScr('adminScreen');initAdmin();}else{showScr('agentScreen');initAgent();}return;}}}}
     localStorage.removeItem('_s');if(auth.currentUser)await signOut(auth);
   }catch(e){localStorage.removeItem('_s');}
   hideLd();showScr('loginScreen');
