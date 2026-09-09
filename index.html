@@ -74,7 +74,7 @@ input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px
 .anav::-webkit-scrollbar{display:none;}
 .nb{padding:8px 13px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;transition:.2s;background:var(--bg);color:var(--mu);font-family:inherit;}
 .nb.active{background:var(--p);color:#fff;}
-.asec{display:none;flex:1;overflow-y:auto;padding-bottom:24px;}
+.asec{display:none;flex:1;overflow:visible;padding-bottom:24px;min-height:0;}
 .asec.active{display:block!important;min-height:calc(100vh - 120px);}
 #adminScreen{min-height:100vh;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px;}
@@ -296,7 +296,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.28', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.29', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -331,7 +331,7 @@ async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type
 const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق المخزن',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
 
 function isRasimPrimary(){return String(CU?.username||'').trim().toLowerCase()==='rasim1010';}
-let CU=null,allU=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
+let CU=null,allU=[],allUsersRaw=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
 
 async function init(){
   $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE)checkForUpdates(false);else $('updateCard')&&($('updateCard').style.display='none');
@@ -467,7 +467,8 @@ function setLP(t,tx){const p=$('lpill');p.className='lpill '+t;$('ltxt').textCon
 function initAdmin(){gotoSec('dashboard');const primary=CU.role==='owner'||isRasimPrimary()||CU.adminLevel==='primary';const secondary=CU.role==='admin'&&!primary;['navAgents','navNotifications','navLocation','navManagement'].forEach(id=>{if($(id))$(id).style.display=secondary?'none':'';});if($('nBtn'))$('nBtn').style.display=secondary?'none':'';if($('ownerAuditNav'))$('ownerAuditNav').style.display=CU.role==='owner'?'block':'none';if($('navAdminAccounts'))$('navAdminAccounts').style.display=(CU.role==='owner'||primary)?'block':'none';if($('newAccountCard'))$('newAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';if($('adminAccountsCard'))$('adminAccountsCard').style.display='block';subUsers();subAtt();if(!secondary)subN();if(!secondary){loadBranchMaps();loadManagement();loadAdminAccounts();}setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
 
 function applyUsersSnapshot(sn){
-  allU=sn.docs.map(d=>({id:d.id,...d.data()}));
+  allUsersRaw=sn.docs.map(d=>({id:d.id,...d.data()}));
+  allU=[...allUsersRaw];
   if(CU?.role==='admin'&&!(isRasimPrimary()||CU.adminLevel==='primary'))allU=allU.filter(u=>u.role==='agent'&&u.branch===CU.branch);
   syncAttendanceView();refDash();renderAgs();updPB();if(CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary')loadAdminAccounts();
   const la=$('leaveAgent');
@@ -481,7 +482,7 @@ async function loadAllU(){
   try{applyUsersSnapshot(await getDocs(collection(db,'users')));}catch(e){console.error('users load',e);toast('تعذر تحميل قائمة المندوبين',5000);}
 }
 
-function syncAttendanceView(){const primary=CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const ids=new Set(allU.filter(u=>u.role==='agent'&&u.branch===CU.branch).map(u=>u.id));allA=allAttendanceRaw.filter(a=>a.branch===CU.branch||ids.has(a.agentId));}else allA=[...allAttendanceRaw];refDash();filterAtt();}
+function syncAttendanceView(){const primary=CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const ids=new Set(allUsersRaw.filter(u=>u.role==='agent'&&u.branch===CU.branch).map(u=>u.id));allA=allAttendanceRaw.filter(a=>a.branch===CU.branch||ids.has(a.agentId));}else allA=[...allAttendanceRaw];refDash();filterAtt();}
 function subAtt(){
   if(aU)aU();
   aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc')),sn=>{allAttendanceRaw=sn.docs.map(d=>({id:d.id,...d.data()}));syncAttendanceView();});
@@ -505,12 +506,11 @@ function refDash(){
 }
 
 window.gotoSec=name=>{
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top:0,left:0,behavior:'smooth'});document.querySelectorAll('.asec').forEach(x=>x.scrollTop=0);
   document.querySelectorAll('.asec').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   $('sec_'+name).classList.add('active');
-  const order=['dashboard','attendance','agents','notifications','location','management'];
-  const btns=document.querySelectorAll('.nb');const i=order.indexOf(name);if(i>=0&&btns[i])btns[i].classList.add('active');
+  const navMap={dashboard:'navDashboard',attendance:'navAttendance',agents:'navAgents',notifications:'navNotifications',location:'navLocation',management:'navManagement',adminaccounts:'navAdminAccounts',adminlogs:'ownerAuditNav'};if($(navMap[name]))$(navMap[name]).classList.add('active');
   if(name==='adminlogs'&&CU.role==='owner')loadOwnerAudit();if(name==='adminaccounts'&&(CU.role==='owner'||CU.adminLevel==='primary'||isRasimPrimary())){loadAllU();loadAdminAccounts();}if(name==='notifications')markNR();if(name==='agents'){loadAllU();renderAgs();}if(name==='management')loadManagement();if(name==='location')setTimeout(()=>{Object.values(branchMapState).forEach(x=>{x.map.invalidateSize(true);x.map.setView([x.lat,x.lng],15,{animate:false});});},250);
 };
 
@@ -580,7 +580,9 @@ let ownerAudits=[],auditUnsub=null;
 async function loadOwnerAudit(){if(CU?.role!=='owner')return;if(auditUnsub)auditUnsub();try{auditUnsub=onSnapshot(collection(db,'auditLogs'),sn=>{const adminIds=new Set(allU.filter(u=>u.role==='admin'||u.role==='owner').map(u=>u.id));ownerAudits=sn.docs.map(d=>({id:d.id,...d.data()})).filter(x=>adminIds.has(x.actorId)).sort((a,b)=>toDate(b.createdAt||b.clientTime||0)-toDate(a.createdAt||a.clientTime||0));renderOwnerAudit();},e=>{$('ownerAuditList').innerHTML='<div class="empty">تعذر تحميل تحركات الأدمنية</div>';});}catch(e){$('ownerAuditList').innerHTML='<div class="empty">تعذر تحميل تحركات الأدمنية</div>';}}
 window.renderOwnerAudit=()=>{const admin=($('auditAdminFilter')?.value||'').trim().toLowerCase(),action=($('auditActionFilter')?.value||'').trim().toLowerCase(),date=$('auditDateFilter')?.value||'';const rows=ownerAudits.filter(x=>{const hay=`${x.actorName||''} ${x.actorUsername||''} ${x.actorId||''}`.toLowerCase(),act=String(x.action||'').toLowerCase(),day=x.createdAt?dStr(x.createdAt):'';return(!admin||hay.includes(admin))&&(!action||act.includes(action))&&(!date||day===date);});const labels={login:'تسجيل دخول',create_admin:'إضافة أدمن',create_primary_admin:'إضافة أدمن أولي',create_agent:'إضافة مندوب',edit_agent:'تعديل مندوب',updateProfile:'تعديل بيانات',changeUsername:'تغيير المعرف',resetPassword:'تغيير الرمز',allowDevice:'السماح بجهاز آخر',block:'تعطيل حساب',unblock:'تفعيل حساب',deleteUser:'حذف حساب',delete_user_permanent:'حذف نهائي',approve:'موافقة',resetDevice:'إعادة الجهاز',manual_checkout:'خروج يدوي',export_report:'تصدير تقرير',print_report:'طباعة تقرير'};$('ownerAuditList').innerHTML=rows.map(x=>`<div class="audit-row"><div class="audit-head"><strong>👤 ${x.actorName||'النظام'} ${x.actorUsername?`(@${x.actorUsername})`:''}</strong><span class="audit-action">${labels[x.action]||x.action||'-'}</span></div><div class="audit-meta">🎯 الحساب: ${x.target||'-'}${x.details?` | ${x.details}`:''}</div><div class="audit-meta">🕒 ${x.createdAt?fDT(x.createdAt):x.clientTime?fDT(x.clientTime):'-'}</div></div>`).join('')||'<div class="empty">لا توجد تحركات مطابقة</div>';};
 window.clearAuditFilters=()=>{['auditAdminFilter','auditActionFilter','auditDateFilter'].forEach(id=>{if($(id))$(id).value='';});renderOwnerAudit();};
-async function loadAdminAccounts(){if(!(CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary'))return;const list=allU.filter(u=>u.role==='admin'&&String(u.username||'').toLowerCase()!=='rasim1010');$('adminAccountsList').innerHTML=list.map((u,i)=>`<div class="audit-row"><div class="audit-head"><strong><span class="list-num">${i+1}</span> ${u.name||'-'} (@${u.username})</strong><span>${u.adminLevel==='primary'?'أدمن أولي':'أدمن ثانوي'} — ${u.status==='blocked'?'معطل':'فعال'}</span></div><div class="fg"><label>الاسم</label><input id="adm_name_${u.id}" value="${u.name||''}"></div><div class="fg"><label>المعرف</label><input id="adm_user_${u.id}" value="${u.username||''}"></div><div class="fg"><label>الفرع</label><select id="adm_branch_${u.id}"><option value="">بدون فرع</option><option ${u.branch==='المركز'?'selected':''}>المركز</option><option ${u.branch==='الحسينية'?'selected':''}>الحسينية</option><option ${u.branch==='طويريج'?'selected':''}>طويريج</option><option ${u.branch==='الحر'?'selected':''}>الحر</option></select></div><div class="fg"><label>رمز جديد (اختياري)</label><input type="password" id="adm_pw_${u.id}" placeholder="اتركه فارغاً"></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn bp" onclick="saveAdminAccount('${u.id}')">💾 تعديل وحفظ</button><button class="btn ${u.status==='blocked'?'bs':'bd'}" onclick="adminToggle('${u.id}')">${u.status==='blocked'?'🔓 تفعيل':'🚫 تعطيل'}</button><button class="btn bd" onclick="deleteAdminAccount('${u.id}')">🗑 حذف</button></div></div>`).join('')||'<div class="empty">لا توجد حسابات أدمنية أخرى</div>';}
+async function loadAdminAccounts(){if(!(CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary'))return;const list=allU.filter(u=>u.role==='admin'&&String(u.username||'').toLowerCase()!=='rasim1010');$('adminAccountsList').innerHTML=list.map((u,i)=>`<div class="audit-row"><div class="audit-head"><strong><span class="list-num">${i+1}</span> ${u.name||'-'} (@${u.username})</strong><span>${u.adminLevel==='primary'?'أدمن أولي':'أدمن ثانوي'} — ${u.status==='blocked'?'معطل':'فعال'}</span></div><div class="audit-meta">الفرع: ${u.branch||'بدون فرع'} | الهاتف: ${u.phone||'-'}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn bp" style="padding:7px 12px;font-size:12px" onclick="showAdminEdit('${u.id}')">✏️ تعديل</button><button class="btn ${u.status==='blocked'?'bs':'bd'}" style="padding:7px 12px;font-size:12px" onclick="adminToggle('${u.id}')">${u.status==='blocked'?'🔓 تفعيل':'🚫 تعطيل'}</button><button class="btn bd" style="padding:7px 12px;font-size:12px" onclick="deleteAdminAccount('${u.id}')">🗑 حذف</button></div></div>`).join('')||'<div class="empty">لا توجد حسابات أدمنية أخرى</div>';}
+window.showAdminEdit=uid=>{const u=allUsersRaw.find(x=>x.id===uid)||allU.find(x=>x.id===uid);if(!u)return;$('agMBody').innerHTML=`<div class="ct">✏️ تعديل حساب الأدمن</div><div class="ib2">${u.name||'-'} (@${u.username||''})</div><div class="fg"><label>الاسم</label><input id="adm_name_${uid}" value="${u.name||''}"></div><div class="fg"><label>المعرف</label><input id="adm_user_${uid}" value="${u.username||''}"></div><div class="fg"><label>الفرع</label><select id="adm_branch_${uid}"><option value="">بدون فرع</option><option ${u.branch==='المركز'?'selected':''}>المركز</option><option ${u.branch==='الحسينية'?'selected':''}>الحسينية</option><option ${u.branch==='طويريج'?'selected':''}>طويريج</option><option ${u.branch==='الحر'?'selected':''}>الحر</option></select></div><div class="fg"><label>رمز جديد (اختياري)</label><input type="password" id="adm_pw_${uid}" placeholder="اتركه فارغاً"></div><button class="btn bp bb" onclick="saveAdminAccount('${uid}')">💾 حفظ التعديل</button>`;openM('agModal');};
+
 window.adminToggle=async uid=>{try{const u=allU.find(x=>x.id===uid);if(!u)return;await apiCall('/api/admin-user',{action:u.status==='blocked'?'unblock':'block',uid});toast(u.status==='blocked'?'✅ تم تفعيل الأدمن':'🚫 تم تعطيل الأدمن');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
 window.deleteAdminAccount=async uid=>{if(!confirm('حذف حساب الأدمن نهائياً مع كل سجلاته؟'))return;try{await apiCall('/api/admin-user',{action:'deleteUser',uid});toast('✅ تم حذف حساب الأدمن');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
 
