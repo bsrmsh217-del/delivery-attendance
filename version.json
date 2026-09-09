@@ -1,8 +1,8 @@
 {
-  "version": "2.0.33",
-  "versionCode": 53,
+  "version": "2.0.34",
+  "versionCode": 54,
   "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.apk",
-  "notes": "توحيد اتصال الموقع وAPK مع API الإنتاج وإصلاح طلبات Capacitor عبر CORS.",
+  "notes": "إصلاح الفراغ الأبيض ومحاذاة قسم حسابات الأدمنية.",
   "required": false,
-  "publishedAt": "2026-09-09T22:41:00+03:00"
+  "publishedAt": "2026-09-09T22:48:00+03:00"
 }
