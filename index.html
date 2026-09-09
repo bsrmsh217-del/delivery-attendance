@@ -206,7 +206,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 <!-- ADMIN -->
 <div id="adminScreen" class="screen">
 <div class="hdr">
-  <div><div class="hsub">لوحة التحكم</div><h1>الأدمن 🛡️</h1></div>
+  <div><div class="hsub">لوحة التحكم</div><h1><span id="adminName">الأدمن</span> 🛡️</h1></div>
   <div class="hact">
     <button class="ib" id="nBtn" onclick="gotoSec('notifications')">🔔<span class="bdg" id="nBdg" style="display:none">0</span></button>
     <button class="ib" onclick="doLogout()">🚪</button>
@@ -297,7 +297,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.32', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.33', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -465,7 +465,8 @@ async function chkLoc(){
 
 function setLP(t,tx){const p=$('lpill');p.className='lpill '+t;$('ltxt').textContent=tx;}
 
-function initAdmin(){gotoSec('dashboard');const primary=CU.role==='owner'||isRasimPrimary()||CU.adminLevel==='primary';const secondary=CU.role==='admin'&&!primary;['navAgents','navNotifications','navLocation','navManagement'].forEach(id=>{if($(id))$(id).style.display=secondary?'none':'';});if($('nBtn'))$('nBtn').style.display=secondary?'none':'';if($('ownerAuditNav'))$('ownerAuditNav').style.display=CU.role==='owner'?'block':'none';if($('navAdminAccounts'))$('navAdminAccounts').style.display=(CU.role==='owner'||primary)?'block':'none';if($('newAccountCard'))$('newAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';if($('adminAccountsCard'))$('adminAccountsCard').style.display='block';if($('selfAccountCard')){$('selfAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';$('self_name').value=CU.name||'';$('self_username').value=CU.username||'';}subUsers();subAtt();if(!secondary)subN();if(!secondary){loadBranchMaps();loadManagement();loadAdminAccounts();}setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
+function updateAdminHeader(){if($('adminName'))$('adminName').textContent=CU?.name||'الأدمن';}
+function initAdmin(){updateAdminHeader();gotoSec('dashboard');const primary=CU.role==='owner'||isRasimPrimary()||CU.adminLevel==='primary';const secondary=CU.role==='admin'&&!primary;['navAgents','navNotifications','navLocation','navManagement'].forEach(id=>{if($(id))$(id).style.display=secondary?'none':'';});if($('nBtn'))$('nBtn').style.display=secondary?'none':'';if($('ownerAuditNav'))$('ownerAuditNav').style.display=CU.role==='owner'?'block':'none';if($('navAdminAccounts'))$('navAdminAccounts').style.display=(CU.role==='owner'||primary)?'block':'none';if($('newAccountCard'))$('newAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';if($('adminAccountsCard'))$('adminAccountsCard').style.display='block';if($('selfAccountCard')){$('selfAccountCard').style.display=(CU.role==='owner'||primary)?'block':'none';$('self_name').value=CU.name||'';$('self_username').value=CU.username||'';}subUsers();subAtt();if(!secondary)subN();if(!secondary){loadBranchMaps();loadManagement();loadAdminAccounts();}setInterval(()=>{if(CU?.role==='admin')refDash();},30000);}
 
 function applyUsersSnapshot(sn){
   allUsersRaw=sn.docs.map(d=>({id:d.id,...d.data()}));
@@ -588,7 +589,7 @@ window.adminToggle=async uid=>{try{const u=allU.find(x=>x.id===uid);if(!u)return
 window.deleteAdminAccount=async uid=>{if(!confirm('حذف حساب الأدمن نهائياً مع كل سجلاته؟'))return;try{await apiCall('/api/admin-user',{action:'deleteUser',uid});toast('✅ تم حذف حساب الأدمن');await loadAllU();}catch(e){toast(apiMsg(e),5000);}};
 
 window.saveAdminAccount=async uid=>{try{const name=$('adm_name_'+uid).value.trim(),username=$('adm_user_'+uid).value.trim().toLowerCase(),branch=$('adm_branch_'+uid).value,password=$('adm_pw_'+uid).value;await apiCall('/api/admin-user',{action:'updateProfile',uid,name,branch});if(username)await apiCall('/api/admin-user',{action:'changeUsername',uid,username});if(password)await apiCall('/api/admin-user',{action:'resetPassword',uid,password});await addAudit('edit_admin',uid,`${name} | ${username} | ${branch}`);toast('✅ تم تعديل حساب الأدمن');await loadAllU();loadAdminAccounts();}catch(e){toast(apiMsg(e),5000);}};
-window.saveSelfAccount=async()=>{try{const name=$('self_name').value.trim(),username=$('self_username').value.trim().toLowerCase(),password=$('self_password').value;if(!name){toast('اكتب الاسم');return;}if(!/^[a-z0-9_]{3,32}$/.test(username)){toast('المعرف يجب أن يكون إنكليزياً من 3 إلى 32 حرفاً أو رقماً');return;}await apiCall('/api/admin-user',{action:'updateProfile',uid:CU.id,name});if(username!==String(CU.username||'').toLowerCase())await apiCall('/api/admin-user',{action:'changeUsername',uid:CU.id,username});if(password){if(password.length<6){toast('الرمز يجب أن يكون 6 أحرف على الأقل');return;}await apiCall('/api/admin-user',{action:'resetPassword',uid:CU.id,password});}CU.name=name;CU.username=username;$('self_password').value='';toast('✅ تم حفظ تعديل الحساب');}catch(e){toast(apiMsg(e),5000);}};
+window.saveSelfAccount=async()=>{try{const name=$('self_name').value.trim(),username=$('self_username').value.trim().toLowerCase(),password=$('self_password').value;if(!name){toast('اكتب الاسم');return;}if(!/^[a-z0-9_]{3,32}$/.test(username)){toast('المعرف يجب أن يكون إنكليزياً من 3 إلى 32 حرفاً أو رقماً');return;}await apiCall('/api/admin-user',{action:'updateProfile',uid:CU.id,name});if(username!==String(CU.username||'').toLowerCase())await apiCall('/api/admin-user',{action:'changeUsername',uid:CU.id,username});if(password){if(password.length<6){toast('الرمز يجب أن يكون 6 أحرف على الأقل');return;}await apiCall('/api/admin-user',{action:'resetPassword',uid:CU.id,password});}CU.name=name;CU.username=username;updateAdminHeader();$('self_password').value='';toast('✅ تم حفظ تعديل الحساب');}catch(e){toast(apiMsg(e),5000);}};
 window.saveLeave=async()=>{const uid=$('leaveAgent').value,from=$('leaveFrom').value,to=$('leaveTo').value,reason=$('leaveReason').value.trim(),u=allU.find(x=>x.id===uid);if(!u||!from||!to||to<from){toast('اختر المندوب وتاريخًا صحيحًا');return;}await addDoc(collection(db,'leaves'),{agentId:uid,agentName:u.name,from,to,reason,createdBy:CU.id,createdAt:serverTimestamp()});await addAudit('add_leave',uid,`${from}..${to}`);toast('تم حفظ الإجازة');['leaveFrom','leaveTo','leaveReason'].forEach(id=>$(id).value='');loadManagement();};
 window.deleteLeave=async id=>{await deleteDoc(doc(db,'leaves',id));await addAudit('delete_leave',id,'');loadManagement();};
 
