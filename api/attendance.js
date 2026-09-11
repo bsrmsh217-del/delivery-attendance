@@ -19,12 +19,13 @@ module.exports = async function handler(req, res) {
     const legacySnap = await db.collection('settings').doc('warehouse').get();
     const locations = locationsSnap.exists ? locationsSnap.data() : {};
     const branch = String(profile.branch || '').trim();
-    if (!branch || !locations[branch]) return res.status(409).json({ ok: false, error: 'BRANCH_LOCATION_NOT_CONFIGURED' });
-    const branchWarehouse = locations[branch];
-    if (!Number.isFinite(Number(branchWarehouse.lat)) || !Number.isFinite(Number(branchWarehouse.lng))) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
-    const matched = [{ name: branch, warehouse: branchWarehouse, distance: distanceMeters(Number(lat), Number(lng), Number(branchWarehouse.lat), Number(branchWarehouse.lng)), radius: Number(branchWarehouse.radius || 100) }].find(x => x.distance <= x.radius);
+    const allowedLocations = branch === 'المركز' || branch === 'الحر' ? ['المركز', 'الحر'] : [branch];
+    const branchCandidates = allowedLocations.filter(name => locations[name]).map(name => ({ name, warehouse: locations[name] })).filter(x => Number.isFinite(Number(x.warehouse.lat)) && Number.isFinite(Number(x.warehouse.lng)));
+    if (!branch || !branchCandidates.length) return res.status(409).json({ ok: false, error: 'BRANCH_LOCATION_NOT_CONFIGURED' });
+    const matched = branchCandidates.map(({ name, warehouse }) => ({ name, warehouse, distance: distanceMeters(Number(lat), Number(lng), Number(warehouse.lat), Number(warehouse.lng)), radius: Number(warehouse.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
     if (!matched) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE' });
-    const { name: attendanceBranch, warehouse, distance, radius } = matched;
+    const { warehouse, distance, radius } = matched;
+    const attendanceBranch = branch;
     const maximumAccuracy = Math.min(50, radius);
     if (Number(accuracy) <= 0 || Number(accuracy) > maximumAccuracy) {
       return res.status(403).json({ ok: false, error: 'GPS_ACCURACY_TOO_LOW', accuracy, maximumAccuracy });

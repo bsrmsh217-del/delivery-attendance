@@ -307,7 +307,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.42', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.43', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -465,10 +465,9 @@ async function chkLoc(){
   try{
     if(!navigator.onLine){locOk=false;setLP('bad','لا يوجد اتصال بالإنترنت');return;}
     await refreshDeviceSecurity();if(securityState.mockLocation||securityState.developerOptions){locOk=false;insideSince=null;setLP('bad','الموقع الوهمي أو إعدادات المطور مفعّلة');$('mainBtn').disabled=true;return;}
-    const ls=await getDoc(doc(db,'settings','locations')),locs=ls.exists()?ls.data():{},branch=String(CU?.branch||'').trim(),w=locs[branch];
-    if(!w||!Number.isFinite(Number(w.lat))||!Number.isFinite(Number(w.lng))){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`موقع فرع ${branch||'الحساب'} غير مهيأ`);$('dstxt').textContent='يرجى من الإدارة تحديد موقع فرعك';return;}
-    const match={name:branch,w,d:dist(myL.lat,myL.lng,w.lat,w.lng),r:Number(w.radius||100)};
-    if(match.d>match.r){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`خارج نطاق مخزن ${branch}`);$('dstxt').textContent=`المطلوب: مخزن ${branch} — المسافة: ${match.d} م — الحد: ${match.r} م`;return;}
+    const ls=await getDoc(doc(db,'settings','locations')),locs=ls.exists()?ls.data():{},branch=String(CU?.branch||'').trim(),allowedBranches=(branch==='المركز'||branch==='الحر')?['المركز','الحر']:[branch],available=allowedBranches.filter(b=>locs[b]&&Number.isFinite(Number(locs[b].lat))&&Number.isFinite(Number(locs[b].lng))).map(b=>({name:b,w:locs[b],d:dist(myL.lat,myL.lng,locs[b].lat,locs[b].lng),r:Number(locs[b].radius||100)})),match=available.sort((a,b)=>a.d-b.d)[0];
+    if(!match){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`موقع فرع ${branch||'الحساب'} غير مهيأ`);$('dstxt').textContent='يرجى من الإدارة تحديد موقع الفرع';return;}
+    if(match.d>match.r){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`خارج نطاق موقع ${branch==='المركز'||branch==='الحر'?'المركز والحر':branch}`);$('dstxt').textContent=`الموقع المسموح: ${branch==='المركز'||branch==='الحر'?'المركز والحر':branch} — المسافة: ${match.d} م — الحد: ${match.r} م`;return;}
     const {name:attendanceBranch,w:wh,d,r}=match,accuracyOk=locAccuracy>0&&locAccuracy<=Math.min(50,r);
     $('dstxt').textContent=`${attendanceBranch} — المسافة: ${d} م — الحد: ${r} م — دقة GPS: ${locAccuracy||'?'} م`;
     if(d<=r&&accuracyOk){
