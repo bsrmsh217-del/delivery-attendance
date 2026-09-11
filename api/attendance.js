@@ -18,10 +18,11 @@ module.exports = async function handler(req, res) {
     const locationsSnap = await db.collection('settings').doc('locations').get();
     const legacySnap = await db.collection('settings').doc('warehouse').get();
     const locations = locationsSnap.exists ? locationsSnap.data() : {};
-    const candidates = Object.entries(locations).filter(([, w]) => Number.isFinite(Number(w.lat)) && Number.isFinite(Number(w.lng)));
-    if (!candidates.length && legacySnap.exists) candidates.push(['المخزن', legacySnap.data()]);
-    if (!candidates.length) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
-    const matched = candidates.map(([name, w]) => ({ name, warehouse: w, distance: distanceMeters(Number(lat), Number(lng), Number(w.lat), Number(w.lng)), radius: Number(w.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
+    const branch = String(profile.branch || '').trim();
+    if (!branch || !locations[branch]) return res.status(409).json({ ok: false, error: 'BRANCH_LOCATION_NOT_CONFIGURED' });
+    const branchWarehouse = locations[branch];
+    if (!Number.isFinite(Number(branchWarehouse.lat)) || !Number.isFinite(Number(branchWarehouse.lng))) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
+    const matched = [{ name: branch, warehouse: branchWarehouse, distance: distanceMeters(Number(lat), Number(lng), Number(branchWarehouse.lat), Number(branchWarehouse.lng)), radius: Number(branchWarehouse.radius || 100) }].find(x => x.distance <= x.radius);
     if (!matched) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE' });
     const { name: attendanceBranch, warehouse, distance, radius } = matched;
     const maximumAccuracy = Math.min(50, radius);
@@ -36,6 +37,8 @@ module.exports = async function handler(req, res) {
       const now = admin.firestore.Timestamp.now();
       if (action === 'checkin') {
         if (pointer.exists) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        const openSnap = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
+        if (openSnap.docs.some(d => !d.data().checkoutTime)) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
         const attendanceRef = db.collection('attendance').doc();
         tx.create(attendanceRef, {
           agentId: decoded.uid,

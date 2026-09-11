@@ -128,6 +128,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 .force-update{display:none;position:fixed;inset:0;background:rgba(17,24,39,.72);z-index:11000;align-items:center;justify-content:center;padding:20px;}
 .force-update.open{display:flex;}
 .force-update-box{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center;}
+.gps-request{display:none;margin:8px auto 0;max-width:280px;font-size:13px;padding:9px 12px;}
 </style>
 </head>
 <body>
@@ -190,6 +191,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
     <div class="clk" id="clk">--:--:--</div>
     <div style="color:var(--mu);font-size:14px;margin-top:4px" id="dtxt"></div>
     <div><div class="lpill chk" id="lpill">🔍 <span id="ltxt">جاري تحديد الموقع...</span></div></div>
+    <button class="btn bp gps-request" id="gpsRequestBtn" onclick="requestGPS()">📍 تفعيل GPS للسماح بالحضور</button>
     <div style="font-size:13px;color:var(--mu);min-height:18px;margin-top:4px" id="dstxt"></div>
     <button class="cbtn ci" id="mainBtn" onclick="doCheck()" disabled>
       <span class="bico">✅</span><span class="blbl" id="mainLbl">تسجيل دخول</span>
@@ -305,7 +307,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.41', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.42', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -337,7 +339,7 @@ window.downloadUpdate=async()=>{if(!IS_NATIVE||!pendingUpdateUrl)return;try{cons
 async function addAudit(action,target='',details=''){try{await addDoc(collection(db,'auditLogs'),{action,target,details,actorId:CU?.id||null,actorName:CU?.name||'النظام',actorUsername:CU?.username||'',deviceId:getDid(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function logLoginAttempt(username,success,reason=''){try{await addDoc(collection(db,'loginAttempts'),{username,success,reason,deviceId:getDid(),deviceInfo:getDinfo(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type':'application/json'};if(needsAuth){if(!auth.currentUser)throw Error('UNAUTHORIZED');headers.Authorization='Bearer '+await auth.currentUser.getIdToken();}const url=path.startsWith('http')?path:`${API_ORIGIN}${path}`;const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'SERVER_ERROR');return d;}
-const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق المخزن',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
+const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق مخزن فرعك',BRANCH_LOCATION_NOT_CONFIGURED:'موقع فرعك غير محدد من الإدارة',WAREHOUSE_NOT_CONFIGURED:'موقع المخزن غير مهيأ',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح من يوم سابق — يجب تسجيل الخروج منه أولاً',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
 
 function isRasimPrimary(){return String(CU?.username||'').trim().toLowerCase()==='rasim1010';}
 let CU=null,allU=[],allUsersRaw=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
@@ -448,20 +450,25 @@ window.showAHist=async()=>{
 };
 
 function startLoc(){
-  if(!navigator.geolocation){setLP('bad','GPS غير مدعوم');return;}
+  if(!navigator.geolocation){setLP('bad','GPS غير مدعوم');$('gpsRequestBtn').style.display='block';return;}
+  $('gpsRequestBtn').style.display='none';
+  if(wid)navigator.geolocation.clearWatch(wid);
   wid=navigator.geolocation.watchPosition(
     pos=>{myL={lat:pos.coords.latitude,lng:pos.coords.longitude};locAccuracy=Math.round(pos.coords.accuracy||0);chkLoc();},
-    ()=>{setLP('bad','تعذّر تحديد الموقع — فعّل GPS');$('mainBtn').disabled=true;},
+    ()=>{setLP('bad','تعذّر تحديد الموقع — فعّل GPS من إعدادات الجهاز أو المتصفح');$('mainBtn').disabled=true;$('gpsRequestBtn').style.display='block';},
     {enableHighAccuracy:true,timeout:8000,maximumAge:3000}
   );
 }
+window.requestGPS=()=>{try{navigator.geolocation.getCurrentPosition(()=>startLoc(),()=>{setLP('bad','اسمح للموقع من نافذة المتصفح ثم اضغط مرة أخرى');$('gpsRequestBtn').style.display='block';},{enableHighAccuracy:true,timeout:10000,maximumAge:0});}catch(e){startLoc();}};
 
 async function chkLoc(){
   try{
     if(!navigator.onLine){locOk=false;setLP('bad','لا يوجد اتصال بالإنترنت');return;}
     await refreshDeviceSecurity();if(securityState.mockLocation||securityState.developerOptions){locOk=false;insideSince=null;setLP('bad','الموقع الوهمي أو إعدادات المطور مفعّلة');$('mainBtn').disabled=true;return;}
-    const ls=await getDoc(doc(db,'settings','locations')),locs=ls.exists()?ls.data():{},candidates=Object.entries(locs).filter(([,w])=>Number.isFinite(Number(w.lat))&&Number.isFinite(Number(w.lng))).map(([name,w])=>({name,w,d:dist(myL.lat,myL.lng,w.lat,w.lng),r:Number(w.radius||100)})).sort((a,b)=>a.d-b.d),match=candidates.find(x=>x.d<=x.r);
-    if(!match){setLP('bad','خارج نطاق المخازن');$('dstxt').textContent='لا يوجد مخزن قريب ضمن النطاق';return;}
+    const ls=await getDoc(doc(db,'settings','locations')),locs=ls.exists()?ls.data():{},branch=String(CU?.branch||'').trim(),w=locs[branch];
+    if(!w||!Number.isFinite(Number(w.lat))||!Number.isFinite(Number(w.lng))){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`موقع فرع ${branch||'الحساب'} غير مهيأ`);$('dstxt').textContent='يرجى من الإدارة تحديد موقع فرعك';return;}
+    const match={name:branch,w,d:dist(myL.lat,myL.lng,w.lat,w.lng),r:Number(w.radius||100)};
+    if(match.d>match.r){locOk=false;insideSince=null;$('mainBtn').disabled=true;setLP('bad',`خارج نطاق مخزن ${branch}`);$('dstxt').textContent=`المطلوب: مخزن ${branch} — المسافة: ${match.d} م — الحد: ${match.r} م`;return;}
     const {name:attendanceBranch,w:wh,d,r}=match,accuracyOk=locAccuracy>0&&locAccuracy<=Math.min(50,r);
     $('dstxt').textContent=`${attendanceBranch} — المسافة: ${d} م — الحد: ${r} م — دقة GPS: ${locAccuracy||'?'} م`;
     if(d<=r&&accuracyOk){

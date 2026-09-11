@@ -1,8 +1,8 @@
 {
-  "version": "2.0.41",
-  "versionCode": 61,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.41.apk",
-  "notes": "إظهار التحديث الإجباري أثناء بقاء المستخدم مسجلاً للدخول.",
+  "version": "2.0.42",
+  "versionCode": 62,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.42.apk",
+  "notes": "فصل مخزن كل فرع وتحسين GPS ومنع الدخول المكرر المفتوح.",
   "required": false,
-  "publishedAt": "2026-09-10T01:00:00+03:00"
+  "publishedAt": "2026-09-11T14:05:00+03:00"
 }
