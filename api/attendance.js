@@ -18,12 +18,14 @@ module.exports = async function handler(req, res) {
     const locationsSnap = await db.collection('settings').doc('locations').get();
     const legacySnap = await db.collection('settings').doc('warehouse').get();
     const locations = locationsSnap.exists ? locationsSnap.data() : {};
-    const candidates = Object.entries(locations).filter(([, w]) => Number.isFinite(Number(w.lat)) && Number.isFinite(Number(w.lng)));
-    if (!candidates.length && legacySnap.exists) candidates.push(['المخزن', legacySnap.data()]);
-    if (!candidates.length) return res.status(409).json({ ok: false, error: 'WAREHOUSE_NOT_CONFIGURED' });
-    const matched = candidates.map(([name, w]) => ({ name, warehouse: w, distance: distanceMeters(Number(lat), Number(lng), Number(w.lat), Number(w.lng)), radius: Number(w.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
+    const branch = String(profile.branch || '').trim();
+    const allowedLocations = branch === 'المركز' || branch === 'الحر' ? ['المركز', 'الحر'] : [branch];
+    const branchCandidates = allowedLocations.filter(name => locations[name]).map(name => ({ name, warehouse: locations[name] })).filter(x => Number.isFinite(Number(x.warehouse.lat)) && Number.isFinite(Number(x.warehouse.lng)));
+    if (!branch || !branchCandidates.length) return res.status(409).json({ ok: false, error: 'BRANCH_LOCATION_NOT_CONFIGURED' });
+    const matched = branchCandidates.map(({ name, warehouse }) => ({ name, warehouse, distance: distanceMeters(Number(lat), Number(lng), Number(warehouse.lat), Number(warehouse.lng)), radius: Number(warehouse.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
     if (!matched) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE' });
-    const { name: attendanceBranch, warehouse, distance, radius } = matched;
+    const { warehouse, distance, radius } = matched;
+    const attendanceBranch = branch;
     const maximumAccuracy = Math.min(50, radius);
     if (Number(accuracy) <= 0 || Number(accuracy) > maximumAccuracy) {
       return res.status(403).json({ ok: false, error: 'GPS_ACCURACY_TOO_LOW', accuracy, maximumAccuracy });
@@ -35,7 +37,14 @@ module.exports = async function handler(req, res) {
       const pointer = await tx.get(pointerRef);
       const now = admin.firestore.Timestamp.now();
       if (action === 'checkin') {
-        if (pointer.exists) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        if (pointer.exists) {
+          const pointedRef = db.collection('attendance').doc(pointer.data().attendanceId);
+          const pointed = await tx.get(pointedRef);
+          if (pointed.exists && !pointed.data().checkoutTime) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+          tx.delete(pointerRef);
+        }
+        const openSnap = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
+        if (openSnap.docs.some(d => !d.data().checkoutTime)) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
         const attendanceRef = db.collection('attendance').doc();
         tx.create(attendanceRef, {
           agentId: decoded.uid,

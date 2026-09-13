@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
     if (action === 'createUser') {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;
       const requestedRole = role === 'primary_admin' ? 'admin' : String(role || 'admin').trim(), adminLevel = role === 'primary_admin' ? 'primary' : 'secondary', branchNorm = String(branch || '').trim(), usernameNormInput = String(username || '').trim().toLowerCase(), passwordNorm = String(password || '');
-      if (requestedRole === 'agent' && !isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
+      if (requestedRole === 'agent' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
       if (requestedRole === 'admin' && !isOwner(actor) && !isPrimaryAdmin(actor)) return res.status(403).json({ ok: false, error: 'PRIMARY_ADMIN_REQUIRED' });
       if (!['admin', 'agent'].includes(requestedRole)) return res.status(400).json({ ok: false, error: 'INVALID_ROLE' });
       if (!String(name || '').trim()) return res.status(400).json({ ok: false, error: 'NAME_REQUIRED' });
