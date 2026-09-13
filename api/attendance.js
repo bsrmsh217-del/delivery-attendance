@@ -37,7 +37,12 @@ module.exports = async function handler(req, res) {
       const pointer = await tx.get(pointerRef);
       const now = admin.firestore.Timestamp.now();
       if (action === 'checkin') {
-        if (pointer.exists) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        if (pointer.exists) {
+          const pointedRef = db.collection('attendance').doc(pointer.data().attendanceId);
+          const pointed = await tx.get(pointedRef);
+          if (pointed.exists && !pointed.data().checkoutTime) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+          tx.delete(pointerRef);
+        }
         const openSnap = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
         if (openSnap.docs.some(d => !d.data().checkoutTime)) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
         const attendanceRef = db.collection('attendance').doc();

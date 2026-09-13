@@ -1,8 +1,8 @@
 {
-  "version": "2.0.43",
-  "versionCode": 63,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.43.apk",
-  "notes": "السماح للمركز والحر باستخدام الموقع الجغرافي المشترك.",
+  "version": "2.0.45",
+  "versionCode": 65,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.45.apk",
+  "notes": "ربط الموقع بالتطبيق، تنظيف الحضور الوهمي، أجهزة موثوقة، وتحديث إجباري.",
   "required": false,
-  "publishedAt": "2026-09-11T14:08:00+03:00"
+  "publishedAt": "2026-09-13T18:30:00+03:00"
 }

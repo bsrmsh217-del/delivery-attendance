@@ -17,6 +17,14 @@ module.exports = async function handler(req, res) {
       await db.collection('auditLogs').add({ action: 'bootstrap_owner', actorId: actor.id, actorName: actor.name, actorUsername: actor.username, target: au.uid, details: 'owner123', createdAt: now });
       return res.status(201).json({ ok: true, username: 'owner123' });
     }
+    if (action === 'resetOpenAttendance') {
+      if (!isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
+      const open = await db.collection('openAttendance').get(), batch = db.batch();
+      open.docs.forEach(d => batch.delete(d.ref));
+      if (!open.empty) await batch.commit();
+      await db.collection('auditLogs').add({ action: 'reset_open_attendance_markers', actorId: actor.id, actorName: actor.name, actorUsername: actor.username, target: 'all', details: `${open.size} markers cleared; attendance records preserved`, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      return res.status(200).json({ ok: true, cleared: open.size });
+    }
     if (action === 'createUser') {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;
       const requestedRole = role === 'primary_admin' ? 'admin' : String(role || 'admin').trim(), adminLevel = role === 'primary_admin' ? 'primary' : 'secondary', branchNorm = String(branch || '').trim(), usernameNormInput = String(username || '').trim().toLowerCase(), passwordNorm = String(password || '');
