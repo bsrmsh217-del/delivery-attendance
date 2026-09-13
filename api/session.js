@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
         const hash = crypto.createHash('sha256').update(String(siteLink)).digest('hex');
         const linkRef = db.collection('siteLinks').doc(hash), linkSnap = await linkRef.get(), link = linkSnap.exists ? linkSnap.data() : null;
         const now = admin.firestore.Timestamp.now();
-        if (!link || link.used || !link.expiresAt || link.expiresAt.toMillis() < now.toMillis() || link.uid !== decoded.uid) return res.status(403).json({ ok: false, error: 'INVALID_SITE_LINK' });
+        if (!link || link.used || !link.expiresAt || link.expiresAt.toMillis() < now.toMillis() || link.uid !== decoded.uid || link.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'INVALID_SITE_LINK' });
         await linkRef.update({ used: true, usedAt: now, usedDeviceId: deviceId });
         validSiteLink = true;
       }

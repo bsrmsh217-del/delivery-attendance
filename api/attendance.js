@@ -16,7 +16,6 @@ module.exports = async function handler(req, res) {
     const admin = getAdmin();
     const db = admin.firestore();
     const locationsSnap = await db.collection('settings').doc('locations').get();
-    const legacySnap = await db.collection('settings').doc('warehouse').get();
     const locations = locationsSnap.exists ? locationsSnap.data() : {};
     const branch = String(profile.branch || '').trim();
     const allowedLocations = branch === 'المركز' || branch === 'الحر' ? ['المركز', 'الحر'] : [branch];
@@ -41,10 +40,10 @@ module.exports = async function handler(req, res) {
           const pointedRef = db.collection('attendance').doc(pointer.data().attendanceId);
           const pointed = await tx.get(pointedRef);
           if (pointed.exists && !pointed.data().checkoutTime) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
-          tx.delete(pointerRef);
         }
         const openSnap = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
         if (openSnap.docs.some(d => !d.data().checkoutTime)) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        if (pointer.exists) tx.delete(pointerRef);
         const attendanceRef = db.collection('attendance').doc();
         tx.create(attendanceRef, {
           agentId: decoded.uid,

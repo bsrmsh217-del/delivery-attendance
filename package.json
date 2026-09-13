@@ -1,13 +1,14 @@
 {
   "name": "delivery-attendance-apk",
-  "version": "2.0.0",
+  "version": "2.0.50",
   "private": true,
   "description": "نظام حضور وانصراف مندوبي التوصيل",
   "scripts": {
     "android:add": "cap add android",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
-    "android:release": "cap copy android && cd android && ./gradlew assembleRelease"
+    "android:release": "cap copy android && cd android && ./gradlew assembleRelease",
+    "verify:release": "node scripts/verify-release.js"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.3",
