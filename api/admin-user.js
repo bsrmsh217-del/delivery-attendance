@@ -19,11 +19,11 @@ module.exports = async function handler(req, res) {
     }
     if (action === 'resetOpenAttendance') {
       if (!isOwner(actor)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
-      const open = await db.collection('openAttendance').get(), batch = db.batch();
-      open.docs.forEach(d => batch.delete(d.ref));
-      if (!open.empty) await batch.commit();
-      await db.collection('auditLogs').add({ action: 'reset_open_attendance_markers', actorId: actor.id, actorName: actor.name, actorUsername: actor.username, target: 'all', details: `${open.size} markers cleared; attendance records preserved`, createdAt: admin.firestore.FieldValue.serverTimestamp() });
-      return res.status(200).json({ ok: true, cleared: open.size });
+      const open = await db.collection('openAttendance').get(), attendance = await db.collection('attendance').get(), valid = new Set(attendance.docs.filter(d => !d.data().checkoutTime).map(d => d.id)), stale = open.docs.filter(d => !valid.has(d.data().attendanceId)), batch = db.batch();
+      stale.forEach(d => batch.delete(d.ref));
+      if (!stale.empty) await batch.commit();
+      await db.collection('auditLogs').add({ action: 'reset_open_attendance_markers', actorId: actor.id, actorName: actor.name, actorUsername: actor.username, target: 'all', details: `${stale.length} stale markers cleared; real open attendance preserved`, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      return res.status(200).json({ ok: true, cleared: stale.length, preserved: open.size - stale.length });
     }
     if (action === 'createUser') {
       const { name, username, password, role = 'admin', branch = '', phone = '', employeeId = '', area = '' } = body;

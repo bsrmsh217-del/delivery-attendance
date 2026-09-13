@@ -1,8 +1,8 @@
 {
-  "version": "2.0.47",
-  "versionCode": 67,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.47.apk",
-  "notes": "تحسين الأداء لـ2000 مندوب مع صفحات وفهارس Firestore.",
+  "version": "2.0.48",
+  "versionCode": 68,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.48.apk",
+  "notes": "إصلاح تسجيل الخروج للحضور المفتوح القديم وحماية السجلات الحقيقية.",
   "required": false,
-  "publishedAt": "2026-09-13T18:57:00+03:00"
+  "publishedAt": "2026-09-13T19:18:00+03:00"
 }

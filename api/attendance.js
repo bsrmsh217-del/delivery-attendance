@@ -63,8 +63,14 @@ module.exports = async function handler(req, res) {
         tx.update(userRef, { activeSessionId: profile.activeSessionId || null, lastAttendanceAt: now });
         return { action, attendanceId: attendanceRef.id, serverTime: now.toDate().toISOString(), distance, radius };
       }
-      if (!pointer.exists) throw Object.assign(new Error('NO_OPEN_ATTENDANCE'), { statusCode: 409 });
-      const attendanceRef = db.collection('attendance').doc(pointer.data().attendanceId);
+      let attendanceRef;
+      if (pointer.exists) attendanceRef = db.collection('attendance').doc(pointer.data().attendanceId);
+      else {
+        const fallback = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
+        const openDoc = fallback.docs.filter(d => !d.data().checkoutTime).sort((a, b) => (b.data().checkinTime?.toMillis?.() || 0) - (a.data().checkinTime?.toMillis?.() || 0))[0];
+        if (!openDoc) throw Object.assign(new Error('NO_OPEN_ATTENDANCE'), { statusCode: 409 });
+        attendanceRef = openDoc.ref;
+      }
       const attendance = await tx.get(attendanceRef);
       if (!attendance.exists || attendance.data().checkoutTime) throw Object.assign(new Error('NO_OPEN_ATTENDANCE'), { statusCode: 409 });
       tx.update(attendanceRef, {
