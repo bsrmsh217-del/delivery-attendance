@@ -1,8 +1,8 @@
 {
-  "version": "2.0.48",
-  "versionCode": 68,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.48.apk",
-  "notes": "إصلاح تسجيل الخروج للحضور المفتوح القديم وحماية السجلات الحقيقية.",
+  "version": "2.0.49",
+  "versionCode": 69,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.49.apk",
+  "notes": "إصلاح خطأ JavaScript وإبقاء الخروج للحضور المفتوح القديم.",
   "required": false,
-  "publishedAt": "2026-09-13T19:18:00+03:00"
+  "publishedAt": "2026-09-14T02:50:00+03:00"
 }

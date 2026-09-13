@@ -308,7 +308,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.48', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.49', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -422,7 +422,7 @@ function renderTR(recs){
 }
 
 async function updBtn(){
-  const sn=await getDocs(query(collection(db,'attendance'),where('agentId','==',CU.id),limit(1000)));const openDocs=sn.docs.filter(d=>!d.data().checkoutTime).sort((a,b)=>(toDate(b.data().checkinTime)-toDate(a.data().checkinTime));const btn=$('mainBtn');
+  const sn=await getDocs(query(collection(db,'attendance'),where('agentId','==',CU.id),limit(1000)));const openDocs=sn.docs.filter(d=>!d.data().checkoutTime).sort((a,b)=>(toDate(b.data().checkinTime)-toDate(a.data().checkinTime)));const btn=$('mainBtn');
   if(openDocs.length){openR={id:openDocs[0].id,...openDocs[0].data()};btn.className='cbtn co';btn.disabled=false;$('mainLbl').textContent='تسجيل خروج';$('ciT').textContent=fT(openR.checkinTime);$('sbox').style.display='block';$('durT').textContent='مدة الدوام: '+dur(openR.checkinTime,new Date().toISOString());}
   else{openR=null;btn.className='cbtn ci';$('mainLbl').textContent='تسجيل دخول';$('sbox').style.display='none';if(!locOk)btn.disabled=true;}
 }
