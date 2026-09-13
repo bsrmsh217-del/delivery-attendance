@@ -301,14 +301,14 @@ input[type=range]{flex:1;accent-color:var(--p);}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,query,where,orderBy,onSnapshot,writeBatch,runTransaction,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,query,where,orderBy,limit,onSnapshot,writeBatch,runTransaction,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyD-4qMzlL0BhvuXdZKX3uAU1Ip_zMCaQCg",authDomain:"delivery-attendance-20663.firebaseapp.com",projectId:"delivery-attendance-20663",storageBucket:"delivery-attendance-20663.firebasestorage.app",messagingSenderId:"235545157551",appId:"1:235545157551:web:74b49e281b6b5f04c1195a"};
 const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.46', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.47', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -344,7 +344,7 @@ const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة ا�
 
 function hasAdminPerm(k){return CU?.role!=='admin'||isRasimPrimary()||CU?.adminLevel==='primary'||CU?.permissions?.[k]!==false;}
 function isRasimPrimary(){return String(CU?.username||'').trim().toLowerCase()==='rasim1010';}
-let CU=null,allU=[],allUsersRaw=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
+let CU=null,allU=[],agPage=0,allUsersRaw=[],allA=[],allAttendanceRaw=[],filteredA=[],myL=null,locOk=false,locAccuracy=null,openR=null,clkInt=null,wid=null,aU=null,nU=null,uU=null,sessionUnsub=null,sessionId=null,agTab='active',warehouseMap=null,warehouseMarker=null,warehouseCircle=null;
 
 async function init(){
   $('appVer')&&($('appVer').textContent=APP_VERSION);setupNetworkState();await loadDeviceSecurity();if(IS_NATIVE){checkForUpdates(false);updateTimer=setInterval(()=>checkForUpdates(false),5*60*1000);}else $('updateCard')&&($('updateCard').style.display='none');
@@ -497,7 +497,7 @@ function applyUsersSnapshot(sn){
 }
 function subUsers(){
   if(uU)uU();
-  uU=onSnapshot(collection(db,'users'),sn=>applyUsersSnapshot(sn),e=>{console.error('users snapshot',e);toast('تعذر تحديث قائمة المندوبين، اضغط القسم مجددًا',5000);});
+  uU=onSnapshot(query(collection(db,'users'),limit(5000)),sn=>applyUsersSnapshot(sn),e=>{console.error('users snapshot',e);toast('تعذر تحديث قائمة المندوبين، اضغط القسم مجددًا',5000);});
 }
 async function loadAllU(){
   try{applyUsersSnapshot(await getDocs(collection(db,'users')));}catch(e){console.error('users load',e);toast('تعذر تحميل قائمة المندوبين',5000);}
@@ -506,7 +506,7 @@ async function loadAllU(){
 function syncAttendanceView(){const primary=CU?.role==='owner'||isRasimPrimary()||CU?.adminLevel==='primary';if(CU?.role==='admin'&&!primary){const branch=String(CU.branch||'').trim();const agents=allUsersRaw.filter(u=>u.role==='agent'&&String(u.branch||'').trim()===branch);const ids=new Set(agents.map(u=>u.id)),names=new Set(agents.map(u=>String(u.name||'').trim())),users=new Set(agents.map(u=>String(u.username||'').trim().toLowerCase()));const matched=allAttendanceRaw.filter(a=>String(a.branch||'').trim()===branch||ids.has(a.agentId)||names.has(String(a.agentName||'').trim())||users.has(String(a.username||'').trim().toLowerCase()));if(agents.length||matched.length||!allA.length)allA=matched;}else allA=[...allAttendanceRaw];refDash();filterAtt();}
 function subAtt(){
   if(aU)aU();
-  aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc')),sn=>{allAttendanceRaw=sn.docs.map(d=>({id:d.id,...d.data()}));syncAttendanceView();});
+  aU=onSnapshot(query(collection(db,'attendance'),orderBy('checkinTime','desc'),limit(10000)),sn=>{allAttendanceRaw=sn.docs.map(d=>({id:d.id,...d.data()}));syncAttendanceView();});
 }
 
 function subN(){
@@ -559,14 +559,15 @@ window.showAD=id=>{
 
 window.manualCheckout=async id=>{const reason=prompt('اكتب سبب تسجيل الخروج اليدوي');if(!reason?.trim())return;await updateDoc(doc(db,'attendance',id),{checkoutTime:serverTimestamp(),manualCheckout:true,manualReason:reason.trim(),manualBy:CU.id,updatedAt:serverTimestamp()});const r=allA.find(x=>x.id===id);if(r?.agentId)await deleteDoc(doc(db,'openAttendance',r.agentId)).catch(()=>{});await addAudit('manual_checkout',id,reason.trim());toast('تم تسجيل الخروج اليدوي');closeM('attModal');};
 
-window.swAgTab=tab=>{agTab=tab;document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',tab==='active'?i===0:tab==='pending'?i===1:i===2));renderAgs();};
+window.swAgTab=tab=>{agTab=tab;agPage=0;document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',tab==='active'?i===0:tab==='pending'?i===1:i===2));renderAgs();};
 window.renderAgs=()=>{
   const s=($('ags')?.value||'').toLowerCase();
   const list=allU.filter(u=>{if(u.role!=='agent')return false;return agTab==='active'?(u.status==='active'):agTab==='pending'?(u.status==='pending'):(u.status==='blocked');}).filter(u=>!s||u.name.toLowerCase().includes(s)||u.username.includes(s)||(u.branch||'').includes(s)||(u.phone||'').includes(s)||(u.employeeId||'').toLowerCase().includes(s));
   const c=$('agList');
   if(!list.length){c.innerHTML='<div class="empty"><div class="ei">👤</div>لا يوجد مندوبون</div>';return;}
+  const pageSize=50,totalPages=Math.ceil(list.length/pageSize);agPage=Math.max(0,Math.min(agPage,totalPages-1));const visible=list.slice(agPage*pageSize,(agPage+1)*pageSize);
   const td=dStr();
-  c.innerHTML=list.map((u,i)=>{const pr=allA.some(a=>a.agentId===u.id&&a.date===td&&!a.checkoutTime);return`<div class="agr" onclick="showAgD('${u.id}')"><span class="list-num">${i+1}</span><div class="av ${u.hasAlert?'red':''}">${u.name.charAt(0)}${u.hasAlert?'<div class="adot"></div>':''}</div><div style="flex:1"><div style="font-weight:700">${u.name} — ${u.branch||'بدون فرع'}</div><div style="font-size:13px;color:var(--mu)">@${u.username}</div></div>${CU.role==='admin'||CU.role==='owner'?`<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn bp" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();showAgD('${u.id}')">تعديل</button>${(CU.role==='owner'||isRasimPrimary()||CU.adminLevel==='primary')?`<button class="btn ${u.status==='blocked'?'bs':'bd'}" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();blkAg('${u.id}')">${u.status==='blocked'?'تفعيل':'تعطيل'}</button><button class="btn bd" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();deleteUser('${u.id}')">حذف</button>`:''}</div>`:''}${u.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn bs" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();apprAg('${u.id}')">قبول</button><button class="btn bd" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();blkAg('${u.id}')">رفض</button></div>`:`<div class="sd ${pr?'on':'off'}"></div>`}</div>`;}).join('');
+  c.innerHTML=visible.map((u,i)=>{const pr=allA.some(a=>a.agentId===u.id&&a.date===td&&!a.checkoutTime);return`<div class="agr" onclick="showAgD('${u.id}')"><span class="list-num">${i+1}</span><div class="av ${u.hasAlert?'red':''}">${u.name.charAt(0)}${u.hasAlert?'<div class="adot"></div>':''}</div><div style="flex:1"><div style="font-weight:700">${u.name} — ${u.branch||'بدون فرع'}</div><div style="font-size:13px;color:var(--mu)">@${u.username}</div></div>${CU.role==='admin'||CU.role==='owner'?`<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn bp" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();showAgD('${u.id}')">تعديل</button>${(CU.role==='owner'||isRasimPrimary()||CU.adminLevel==='primary')?`<button class="btn ${u.status==='blocked'?'bs':'bd'}" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();blkAg('${u.id}')">${u.status==='blocked'?'تفعيل':'تعطيل'}</button><button class="btn bd" style="padding:5px 7px;font-size:11px" onclick="event.stopPropagation();deleteUser('${u.id}')">حذف</button>`:''}</div>`:''}${u.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn bs" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();apprAg('${u.id}')">قبول</button><button class="btn bd" style="padding:6px 10px;font-size:12px" onclick="event.stopPropagation();blkAg('${u.id}')">رفض</button></div>`:`<div class="sd ${pr?'on':'off'}"></div>`}</div>`;}).join('')+`<div style="display:flex;justify-content:center;gap:8px;align-items:center;margin:14px 0"><button class="btn bg" ${agPage===0?'disabled':''} onclick="agPage--;renderAgs()">السابق</button><span style="font-size:13px;color:var(--mu)">صفحة ${agPage+1} من ${totalPages} — ${list.length} مندوب</span><button class="btn bg" ${agPage>=totalPages-1?'disabled':''} onclick="agPage++;renderAgs()">التالي</button></div>`;
 };
 
 function updPB(){const p=allU.filter(u=>u.role!=='admin'&&u.status==='pending');const b=$('pb');b.style.display=p.length?'flex':'none';if(p.length)$('pc').textContent=p.length;}

@@ -1,8 +1,8 @@
 {
-  "version": "2.0.46",
-  "versionCode": 66,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.46.apk",
-  "notes": "صلاحيات أدمن تفصيلية وحضور ويب كامل وصفحة حالة النظام وفحص إصدار آمن.",
+  "version": "2.0.47",
+  "versionCode": 67,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.47.apk",
+  "notes": "تحسين الأداء لـ2000 مندوب مع صفحات وفهارس Firestore.",
   "required": false,
-  "publishedAt": "2026-09-13T18:50:00+03:00"
+  "publishedAt": "2026-09-13T18:57:00+03:00"
 }
