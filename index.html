@@ -218,7 +218,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 <div class="hdr">
   <div><div class="hsub">لوحة التحكم</div><h1><span id="adminName">الأدمن</span> 🛡️</h1></div>
   <div class="hact">
-    <button class="ib" id="nBtn" onclick="gotoSec('notifications')">🔔<span class="bdg" id="nBdg" style="display:none">0</span></button>
+    <button class="ib" onclick="openTrustedSite()" title="فتح الموقع لهذا الجهاز">🌐</button><button class="ib" id="nBtn" onclick="gotoSec('notifications')">🔔<span class="bdg" id="nBdg" style="display:none">0</span></button>
     <button class="ib" onclick="doLogout()">🚪</button>
   </div>
 </div>
@@ -308,7 +308,7 @@ const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.51', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.50', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 

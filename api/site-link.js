@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
     const { decoded, profile } = await requireUser(req);
     const { action, deviceId, deviceInfo = '' } = req.body || {};
     if (action !== 'create' || !deviceId) return res.status(400).json({ ok: false, error: 'INVALID_LINK_REQUEST' });
-    if (profile.role !== 'agent') return res.status(403).json({ ok: false, error: 'AGENT_REQUIRED' });
+    if (!['agent', 'admin', 'owner'].includes(profile.role)) return res.status(403).json({ ok: false, error: 'ACCOUNT_NOT_ALLOWED' });
     const admin = getAdmin(), db = admin.firestore();
     const raw = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');

@@ -12,13 +12,13 @@ module.exports = async function handler(req, res) {
     const db = admin.firestore();
     const ref = db.collection('users').doc(decoded.uid);
     let validSiteLink = false;
-    if (clientType === 'web' && profile.role === 'agent') {
-      if (!siteLink && !profile.webDeviceId) return res.status(403).json({ ok: false, error: 'SITE_LINK_REQUIRED' });
+    if (clientType === 'web') {
+      if (profile.role === 'agent' && !siteLink && !profile.webDeviceId) return res.status(403).json({ ok: false, error: 'SITE_LINK_REQUIRED' });
       if (siteLink) {
         const hash = crypto.createHash('sha256').update(String(siteLink)).digest('hex');
         const linkRef = db.collection('siteLinks').doc(hash), linkSnap = await linkRef.get(), link = linkSnap.exists ? linkSnap.data() : null;
         const now = admin.firestore.Timestamp.now();
-        if (!link || link.used || !link.expiresAt || link.expiresAt.toMillis() < now.toMillis() || link.uid !== decoded.uid) return res.status(403).json({ ok: false, error: 'INVALID_SITE_LINK' });
+        if (!link || link.used || !link.expiresAt || link.expiresAt.toMillis() < now.toMillis() || link.uid !== decoded.uid || link.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'INVALID_SITE_LINK' });
         await linkRef.update({ used: true, usedAt: now, usedDeviceId: deviceId });
         validSiteLink = true;
       }
