@@ -182,7 +182,7 @@ input[type=range]{flex:1;accent-color:var(--p);}
 <div class="hdr">
   <div><div class="hsub">مرحباً،</div><h1 id="agName">المندوب</h1></div>
   <div class="hact">
-    <button class="ib" onclick="openTrustedSite()" title="فتح الموقع لهذا الجهاز">🌐</button><button class="ib" onclick="showAHist()">📋</button>
+    <button class="ib" onclick="showAHist()">📋</button>
     <button class="ib" onclick="doLogout()">🚪</button>
   </div>
 </div>
@@ -340,7 +340,7 @@ window.downloadUpdate=async()=>{if(!IS_NATIVE||!pendingUpdateUrl)return;try{cons
 async function addAudit(action,target='',details=''){try{await addDoc(collection(db,'auditLogs'),{action,target,details,actorId:CU?.id||null,actorName:CU?.name||'النظام',actorUsername:CU?.username||'',deviceId:getDid(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function logLoginAttempt(username,success,reason=''){try{await addDoc(collection(db,'loginAttempts'),{username,success,reason,deviceId:getDid(),deviceInfo:getDinfo(),clientTime:new Date().toISOString(),createdAt:serverTimestamp()});}catch(e){}}
 async function apiCall(path,body={},needsAuth=true){const headers={'Content-Type':'application/json'};if(needsAuth){if(!auth.currentUser)throw Error('UNAUTHORIZED');headers.Authorization='Bearer '+await auth.currentUser.getIdToken();}const url=path.startsWith('http')?path:`${API_ORIGIN}${path}`;const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'SERVER_ERROR');return d;}
-const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',SECOND_SITE_DEVICE:'الموقع مرتبط بجهاز آخر — افتحه من زر التطبيق أو اطلب السماح من الإدارة',SITE_LINK_REQUIRED:'افتح الموقع من زر التطبيق أولاً لربط هذا الجهاز',INVALID_SITE_LINK:'رابط ربط الموقع منتهي أو مستخدم مسبقاً',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق مخزن فرعك',BRANCH_LOCATION_NOT_CONFIGURED:'موقع فرعك غير محدد من الإدارة',WAREHOUSE_NOT_CONFIGURED:'موقع المخزن غير مهيأ',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح من يوم سابق — يجب تسجيل الخروج منه أولاً',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
+const apiMsg=e=>({INVALID_CREDENTIALS:'اسم المستخدم أو كلمة المرور غير صحيحة',ACCOUNT_PENDING:'الحساب بانتظار موافقة الأدمن',ACCOUNT_NOT_ACTIVE:'الحساب بانتظار موافقة الأدمن قبل تسجيل الدخول',PROFILE_NOT_FOUND:'لم يتم العثور على ملف الحساب، تواصل مع الأدمن',ACCOUNT_BLOCKED:'الحساب محظور',SECOND_DEVICE_BLOCKED:'الحساب مرتبط بجهاز آخر',USERNAME_TAKEN:'اسم المستخدم مستخدم بالفعل',INVALID_REGISTRATION_DATA:'تحقق من البيانات وكلمة مرور من 8 أحرف',OUTSIDE_GEOFENCE:'أنت خارج نطاق مخزن فرعك',BRANCH_LOCATION_NOT_CONFIGURED:'موقع فرعك غير محدد من الإدارة',WAREHOUSE_NOT_CONFIGURED:'موقع المخزن غير مهيأ',GPS_ACCURACY_TOO_LOW:'دقة GPS غير كافية',MOCK_LOCATION_REJECTED:'تم رفض الموقع الوهمي أو إعدادات المطور',ALREADY_CHECKED_IN:'يوجد تسجيل دخول مفتوح من يوم سابق — يجب تسجيل الخروج منه أولاً',NO_OPEN_ATTENDANCE:'لا يوجد تسجيل دخول مفتوح'}[e.message]||e.message||'حدث خطأ');
 
 function hasAdminPerm(k){return CU?.role!=='admin'||isRasimPrimary()||CU?.adminLevel==='primary'||CU?.permissions?.[k]!==false;}
 function isRasimPrimary(){return String(CU?.username||'').trim().toLowerCase()==='rasim1010';}
@@ -362,14 +362,12 @@ window.switchTab=tab=>{
   $('regForm').style.display=tab==='reg'?'block':'none';
 };
 
-window.openTrustedSite=async()=>{try{if(!IS_NATIVE){toast('افتح الموقع من زر التطبيق على الهاتف');return;}const d=await apiCall('/api/site-link',{action:'create',deviceId:getDid(),deviceInfo:getDinfo()});const p=window.Capacitor?.Plugins?.Browser;if(p?.open)await p.open({url:d.url});else window.open(d.url,'_blank');}catch(e){toast('تعذر إنشاء رابط الموقع: '+(e.message||'حاول مرة أخرى'),5000);}};
-
 window.doLogin=async()=>{
   const u=$('lu').value.trim().toLowerCase(),p=$('lp').value;hErr('lerr');if(!u||!p){sErr('lerr','أدخل اسم المستخدم وكلمة المرور');return;}
   const btn=$('loginBtn');btn.disabled=true;btn.innerHTML='<div class="sp"></div>';
   try{
     const credential=await signInWithEmailAndPassword(auth,`${u}@deliveryattendance.app`,p);
-    const siteLink=new URLSearchParams(location.search).get('siteLink')||'';const session=await apiCall('/api/session',{deviceId:getDid(),deviceInfo:getDinfo(),clientType:IS_NATIVE?'native':'web',siteLink});if(siteLink)history.replaceState({},'',location.pathname);
+    const session=await apiCall('/api/session',{deviceId:getDid(),deviceInfo:getDinfo(),clientType:IS_NATIVE?'native':'web'});
     let profile=session.profile||null;
     if(!profile){const ps=await getDoc(doc(db,'users',credential.user.uid));if(ps.exists())profile={id:ps.id,...ps.data()};}
     if(!profile?.role)throw Error('PROFILE_NOT_FOUND');
