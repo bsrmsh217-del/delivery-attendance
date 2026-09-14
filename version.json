@@ -1,8 +1,8 @@
 {
-  "version": "2.0.52",
-  "versionCode": 72,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.52.apk",
-  "notes": "إصدار Android جديد بمفتاح توقيع جديد.",
+  "version": "2.0.53",
+  "versionCode": 73,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.53.apk",
+  "notes": "إلغاء زر الكرة وربط الموقع والسماح بالدخول المباشر من Safari.",
   "required": false,
   "publishedAt": "2026-09-14T19:30:00+03:00"
 }

@@ -1,4 +1,4 @@
-# نظام حضور المندوبين — الإصدار 2.0.52
+# نظام حضور المندوبين — الإصدار 2.0.53
 
 نظام حضور يعمل من الموقع وتطبيق Android، مع ربط Firebase وVercel والتحقق من GPS داخل نطاق الفرع. يدعم Owner والأدمن الأول والأدمن الثانوي والمندوب، مع صلاحيات وفروع وسجل تدقيق وأجهزة موثوقة.
 
@@ -6,9 +6,13 @@
 
 الموقع الإنتاجي: https://delivery-attendance.vercel.app/
 
-رابط APK الحالي: https://delivery-attendance.vercel.app/delivery-attendance-v2.0.52.apk
+رابط APK الحالي: https://delivery-attendance.vercel.app/delivery-attendance-v2.0.53.apk
 
 ملف الإصدار: https://delivery-attendance.vercel.app/version.json
+
+## الدخول من Android وiPhone
+
+يمكن لمستخدم Android الدخول من التطبيق، ويمكن لمستخدم iPhone فتح الموقع مباشرة من Safari وتسجيل الدخول بدون زر الكرة أو رابط ربط خاص. يبقى فحص GPS ونطاق الفرع فعالاً عند تسجيل الحضور.
 
 ## الحسابات والصلاحيات
 
