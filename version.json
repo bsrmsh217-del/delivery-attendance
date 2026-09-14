@@ -1,8 +1,8 @@
 {
-  "version": "2.0.41",
-  "versionCode": 61,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.41.apk",
-  "notes": "إظهار التحديث الإجباري أثناء بقاء المستخدم مسجلاً للدخول.",
+  "version": "2.0.51",
+  "versionCode": 71,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.51.apk",
+  "notes": "إصلاح شامل لمعاملات Firestore وربط الموقع وفحص التشغيل.",
   "required": false,
-  "publishedAt": "2026-09-10T01:00:00+03:00"
+  "publishedAt": "2026-09-14T02:50:00+03:00"
 }
