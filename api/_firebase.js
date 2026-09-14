@@ -5,7 +5,11 @@ function handleCors(req, res) {
   const allowed = configured.length ? configured : [
     process.env.PUBLIC_APP_URL || 'https://delivery-attendance.vercel.app',
     'http://localhost:3000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost',
+    'https://localhost',
+    'capacitor://localhost',
+    'ionic://localhost'
   ].map(value => value.replace(/\/$/, ''));
   const origin = String(req.headers.origin || '').replace(/\/$/, '');
   if (origin && allowed.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
