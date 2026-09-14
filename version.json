@@ -1,8 +1,8 @@
 {
-  "version": "2.0.51",
-  "versionCode": 71,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.51.apk",
-  "notes": "إصلاح شامل لمعاملات Firestore وربط الموقع وفحص التشغيل.",
+  "version": "2.0.52",
+  "versionCode": 72,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.52.apk",
+  "notes": "إصدار Android جديد بمفتاح توقيع جديد.",
   "required": false,
-  "publishedAt": "2026-09-14T02:50:00+03:00"
+  "publishedAt": "2026-09-14T19:30:00+03:00"
 }

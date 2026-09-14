@@ -1,6 +1,6 @@
 {
   "name": "delivery-attendance-apk",
-  "version": "2.0.51",
+  "version": "2.0.52",
   "private": true,
   "description": "نظام حضور وانصراف مندوبي التوصيل",
   "scripts": {
