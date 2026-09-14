@@ -1,0 +1,94 @@
+const { getAdmin, requireUser, distanceMeters, baghdadDate, sendError, handleCors } = require('./_firebase');
+
+module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
+  try {
+    const { decoded, profile } = await requireUser(req);
+    if (profile.role === 'admin') return res.status(403).json({ ok: false, error: 'AGENT_REQUIRED' });
+
+    const { action, lat, lng, accuracy, deviceId, deviceInfo, mockLocation, developerOptions } = req.body || {};
+    if (!['checkin', 'checkout'].includes(action)) return res.status(400).json({ ok: false, error: 'INVALID_ACTION' });
+    if (![lat, lng, accuracy].every(Number.isFinite)) return res.status(400).json({ ok: false, error: 'INVALID_LOCATION' });
+    if (!deviceId || profile.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'UNTRUSTED_DEVICE' });
+    if (mockLocation || developerOptions) return res.status(403).json({ ok: false, error: 'MOCK_LOCATION_REJECTED' });
+
+    const admin = getAdmin();
+    const db = admin.firestore();
+    const locationsSnap = await db.collection('settings').doc('locations').get();
+    const locations = locationsSnap.exists ? locationsSnap.data() : {};
+    const branch = String(profile.branch || '').trim();
+    const allowedLocations = branch === 'المركز' || branch === 'الحر' ? ['المركز', 'الحر'] : [branch];
+    const branchCandidates = allowedLocations.filter(name => locations[name]).map(name => ({ name, warehouse: locations[name] })).filter(x => Number.isFinite(Number(x.warehouse.lat)) && Number.isFinite(Number(x.warehouse.lng)));
+    if (!branch || !branchCandidates.length) return res.status(409).json({ ok: false, error: 'BRANCH_LOCATION_NOT_CONFIGURED' });
+    const matched = branchCandidates.map(({ name, warehouse }) => ({ name, warehouse, distance: distanceMeters(Number(lat), Number(lng), Number(warehouse.lat), Number(warehouse.lng)), radius: Number(warehouse.radius || 100) })).filter(x => x.distance <= x.radius).sort((a, b) => a.distance - b.distance)[0];
+    if (!matched) return res.status(403).json({ ok: false, error: 'OUTSIDE_GEOFENCE' });
+    const { warehouse, distance, radius } = matched;
+    const attendanceBranch = branch;
+    const maximumAccuracy = Math.min(50, radius);
+    if (Number(accuracy) <= 0 || Number(accuracy) > maximumAccuracy) {
+      return res.status(403).json({ ok: false, error: 'GPS_ACCURACY_TOO_LOW', accuracy, maximumAccuracy });
+    }
+
+    const pointerRef = db.collection('openAttendance').doc(decoded.uid);
+    const userRef = db.collection('users').doc(decoded.uid);
+    const result = await db.runTransaction(async tx => {
+      const pointer = await tx.get(pointerRef);
+      const now = admin.firestore.Timestamp.now();
+      if (action === 'checkin') {
+        if (pointer.exists) {
+          const pointedRef = db.collection('attendance').doc(pointer.data().attendanceId);
+          const pointed = await tx.get(pointedRef);
+          if (pointed.exists && !pointed.data().checkoutTime) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        }
+        const openSnap = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
+        if (openSnap.docs.some(d => !d.data().checkoutTime)) throw Object.assign(new Error('ALREADY_CHECKED_IN'), { statusCode: 409 });
+        if (pointer.exists) tx.delete(pointerRef);
+        const attendanceRef = db.collection('attendance').doc();
+        tx.create(attendanceRef, {
+          agentId: decoded.uid,
+          agentName: profile.name,
+          username: profile.username,
+          branch: attendanceBranch,
+          date: baghdadDate(now.toDate()),
+          checkinTime: now,
+          checkoutTime: null,
+          checkinLat: Number(lat), checkinLng: Number(lng), checkinAccuracy: Number(accuracy),
+          checkoutLat: null, checkoutLng: null, checkoutAccuracy: null,
+          deviceId, deviceInfo: deviceInfo || '',
+          createdAt: now
+        });
+        tx.create(pointerRef, { attendanceId: attendanceRef.id, agentId: decoded.uid, createdAt: now });
+        tx.update(userRef, { activeSessionId: profile.activeSessionId || null, lastAttendanceAt: now });
+        return { action, attendanceId: attendanceRef.id, serverTime: now.toDate().toISOString(), distance, radius };
+      }
+      let attendanceRef;
+      if (pointer.exists) attendanceRef = db.collection('attendance').doc(pointer.data().attendanceId);
+      else {
+        const fallback = await tx.get(db.collection('attendance').where('agentId', '==', decoded.uid));
+        const openDoc = fallback.docs.filter(d => !d.data().checkoutTime).sort((a, b) => (b.data().checkinTime?.toMillis?.() || 0) - (a.data().checkinTime?.toMillis?.() || 0))[0];
+        if (!openDoc) throw Object.assign(new Error('NO_OPEN_ATTENDANCE'), { statusCode: 409 });
+        attendanceRef = openDoc.ref;
+      }
+      const attendance = await tx.get(attendanceRef);
+      if (!attendance.exists || attendance.data().checkoutTime) throw Object.assign(new Error('NO_OPEN_ATTENDANCE'), { statusCode: 409 });
+      tx.update(attendanceRef, {
+        checkoutTime: now,
+        checkoutLat: Number(lat), checkoutLng: Number(lng), checkoutAccuracy: Number(accuracy),
+        updatedAt: now
+      });
+      tx.delete(pointerRef);
+      tx.update(userRef, { lastAttendanceAt: now });
+      return { action, attendanceId: attendanceRef.id, serverTime: now.toDate().toISOString(), distance, radius };
+    });
+
+    await db.collection('auditLogs').add({
+      action: `attendance_${action}`, actorId: decoded.uid, actorName: profile.name,
+      target: result.attendanceId, details: `distance=${distance};accuracy=${accuracy}`,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    res.status(200).json({ ok: true, ...result });
+  } catch (error) {
+    sendError(res, error);
+  }
+};
