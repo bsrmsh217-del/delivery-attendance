@@ -1,7 +1,15 @@
 const admin = require('firebase-admin');
 
 function handleCors(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const configured = String(process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim().replace(/\/$/, '')).filter(Boolean);
+  const allowed = configured.length ? configured : [
+    process.env.PUBLIC_APP_URL || 'https://delivery-attendance.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ].map(value => value.replace(/\/$/, ''));
+  const origin = String(req.headers.origin || '').replace(/\/$/, '');
+  if (origin && allowed.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Max-Age', '86400');

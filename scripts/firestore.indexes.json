@@ -1,9 +1,0 @@
-{
-  "indexes": [
-    {"collectionGroup":"attendance","queryScope":"COLLECTION","fields":[{"fieldPath":"agentId","order":"ASCENDING"},{"fieldPath":"date","order":"ASCENDING"}]},
-    {"collectionGroup":"attendance","queryScope":"COLLECTION","fields":[{"fieldPath":"agentId","order":"ASCENDING"},{"fieldPath":"checkinTime","order":"DESCENDING"}]},
-    {"collectionGroup":"attendance","queryScope":"COLLECTION","fields":[{"fieldPath":"branch","order":"ASCENDING"},{"fieldPath":"date","order":"ASCENDING"},{"fieldPath":"checkinTime","order":"DESCENDING"}]},
-    {"collectionGroup":"attendance","queryScope":"COLLECTION","fields":[{"fieldPath":"agentId","order":"ASCENDING"},{"fieldPath":"checkoutTime","order":"ASCENDING"}]}
-  ],
-  "fieldOverrides": []
-}
