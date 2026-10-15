@@ -14,14 +14,22 @@ module.exports = async function handler(req, res) {
     if (!['admin', 'owner'].includes(profile.role) && clientType !== 'web' && profile.deviceId && profile.deviceId !== deviceId) {
       const now = admin.firestore.Timestamp.now();
       await ref.update({ hasAlert: true, lastBlockedDevice: deviceId, lastBlockedDeviceInfo: deviceInfo, lastBlockedAt: now });
-      await db.collection('notifications').add({ type: 'alert', icon: '🚨', branch: profile.branch || '', agentId: profile.id, text: `تنبيه أمني: المندوب "${profile.name}" — ${profile.branch || 'بدون فرع'} حاول فتح حسابه من جهاز آخر. الجهاز: ${deviceInfo}`, read: false, createdAt: now.toDate().toISOString() });
+      try {
+        await db.collection('notifications').add({ type: 'alert', icon: '🚨', branch: profile.branch || '', agentId: profile.id, text: `تنبيه أمني: المندوب "${profile.name}" — ${profile.branch || 'بدون فرع'} حاول فتح حسابه من جهاز آخر. الجهاز: ${deviceInfo}`, read: false, createdAt: now.toDate().toISOString() });
+      } catch (notificationError) {
+        console.error('notification write failed during device block', notificationError);
+      }
       return res.status(403).json({ ok: false, error: 'SECOND_DEVICE_BLOCKED' });
     }
     const sessionId = ['admin', 'owner'].includes(profile.role) ? null : crypto.randomUUID();
     const updates = { activeSessionId: sessionId, lastLoginAt: admin.firestore.FieldValue.serverTimestamp() };
     if (!['admin', 'owner'].includes(profile.role) && !profile.deviceId) Object.assign(updates, { deviceId, deviceInfo });
     await ref.update(updates);
-    await db.collection('auditLogs').add({ action: 'login', actorId: decoded.uid, actorName: profile.name, target: decoded.uid, details: deviceInfo, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    try {
+      await db.collection('auditLogs').add({ action: 'login', actorId: decoded.uid, actorName: profile.name, target: decoded.uid, details: deviceInfo, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    } catch (auditError) {
+      console.error('login audit write failed', auditError);
+    }
     res.status(200).json({ ok: true, sessionId, profile: { ...profile, ...updates } });
   } catch (error) {
     sendError(res, error);

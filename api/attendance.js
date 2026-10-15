@@ -82,11 +82,15 @@ module.exports = async function handler(req, res) {
       return { action, attendanceId: attendanceRef.id, serverTime: now.toDate().toISOString(), distance, radius };
     });
 
-    await db.collection('auditLogs').add({
-      action: `attendance_${action}`, actorId: decoded.uid, actorName: profile.name,
-      target: result.attendanceId, details: `distance=${distance};accuracy=${accuracy}`,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+    try {
+      await db.collection('auditLogs').add({
+        action: `attendance_${action}`, actorId: decoded.uid, actorName: profile.name,
+        target: result.attendanceId, details: `distance=${distance};accuracy=${accuracy}`,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (auditError) {
+      console.error('attendance audit write failed', auditError);
+    }
     res.status(200).json({ ok: true, ...result });
   } catch (error) {
     sendError(res, error);
