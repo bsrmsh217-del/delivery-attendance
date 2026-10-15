@@ -1,9 +1,10 @@
-const { getAdmin, requireUser, distanceMeters, baghdadDate, sendError, handleCors } = require('./_firebase');
+const { getAdmin, requireUser, distanceMeters, baghdadDate, sendError, handleCors, rateLimit, cleanText } = require('./_firebase');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   try {
+    rateLimit(req, 'attendance', 30);
     const { decoded, profile } = await requireUser(req);
     if (profile.role === 'admin') return res.status(403).json({ ok: false, error: 'AGENT_REQUIRED' });
 
@@ -55,7 +56,7 @@ module.exports = async function handler(req, res) {
           checkoutTime: null,
           checkinLat: Number(lat), checkinLng: Number(lng), checkinAccuracy: Number(accuracy),
           checkoutLat: null, checkoutLng: null, checkoutAccuracy: null,
-          deviceId, deviceInfo: deviceInfo || '',
+          deviceId, deviceInfo: cleanText(deviceInfo, 160),
           createdAt: now
         });
         tx.create(pointerRef, { attendanceId: attendanceRef.id, agentId: decoded.uid, createdAt: now });

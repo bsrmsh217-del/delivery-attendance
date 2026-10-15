@@ -2,7 +2,7 @@
   "version": "2.0.53",
   "versionCode": 73,
   "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.53.apk",
-  "notes": "إلغاء زر الكرة وربط الموقع والسماح بالدخول المباشر من Safari.",
+  "notes": "تحسينات الموقع وAPI منشورة؛ تحديث APK ينتظر مفتاح التوقيع.",
   "required": false,
   "publishedAt": "2026-09-14T19:30:00+03:00"
 }

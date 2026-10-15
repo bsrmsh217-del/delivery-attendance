@@ -1,8 +1,9 @@
-const { getAdmin, requireAdmin, isOwner, sendError, handleCors } = require('./_firebase');
+const { getAdmin, requireAdmin, isOwner, sendError, handleCors, rateLimit } = require('./_firebase');
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   try {
+    rateLimit(req, 'system-status', 20);
     const { profile } = await requireAdmin(req);
     if (!isOwner(profile)) return res.status(403).json({ ok: false, error: 'OWNER_REQUIRED' });
     const admin = getAdmin(), db = admin.firestore();

@@ -1,5 +1,22 @@
 const admin = require('firebase-admin');
 
+const rateBuckets = new Map();
+function rateLimit(req, key, limit = 60, windowMs = 60000) {
+  const now = Date.now();
+  const ip = String(req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
+  const bucketKey = `${key}:${ip}`;
+  const bucket = rateBuckets.get(bucketKey);
+  if (!bucket || now - bucket.startedAt >= windowMs) { rateBuckets.set(bucketKey, { startedAt: now, count: 1 }); return; }
+  bucket.count += 1;
+  if (bucket.count > limit) { const error = new Error('RATE_LIMITED'); error.statusCode = 429; throw error; }
+}
+function cleanText(value, max = 160) {
+  return String(value ?? '').replace(/[<>]/g, '').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, max);
+}
+async function safeAudit(db, entry) {
+  try { await db.collection('auditLogs').add(entry); } catch (error) { console.error('audit write failed', error); }
+}
+
 function handleCors(req, res) {
   const configured = String(process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim().replace(/\/$/, '')).filter(Boolean);
   const allowed = configured.length ? configured : [
@@ -22,9 +39,12 @@ function handleCors(req, res) {
 }
 function getApp() {
   if (admin.apps.length) return admin.app();
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  const raw = String(process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
   if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT is not configured');
-  return admin.initializeApp({ credential: admin.credential.cert(JSON.parse(raw)) });
+  let serviceAccount;
+  try { serviceAccount = JSON.parse(raw); } catch (_) { throw new Error('FIREBASE_SERVICE_ACCOUNT is invalid JSON'); }
+  if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) throw new Error('FIREBASE_SERVICE_ACCOUNT is incomplete');
+  return admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 }
 function getAdmin() { getApp(); return admin; }
 async function requireUser(req) {
@@ -51,5 +71,5 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
   return Math.round(radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 function baghdadDate(date = new Date()) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date); }
-function sendError(res, error) { const status = error.statusCode || 500; res.status(status).json({ ok: false, error: status >= 500 ? 'SERVER_ERROR' : error.message }); }
-module.exports = { getAdmin, requireUser, requireAdmin, isOwner, isPrimaryAdmin, distanceMeters, baghdadDate, sendError, handleCors };
+function sendError(res, error) { console.error('API error', error); const known = new Set(['UNAUTHORIZED','PROFILE_NOT_FOUND','ACCOUNT_NOT_ACTIVE','ACCOUNT_BLOCKED','ADMIN_REQUIRED','AGENT_REQUIRED','OWNER_REQUIRED','PRIMARY_ADMIN_REQUIRED','SECOND_DEVICE_BLOCKED','OUTSIDE_GEOFENCE','BRANCH_LOCATION_NOT_CONFIGURED','WAREHOUSE_NOT_CONFIGURED','GPS_ACCURACY_TOO_LOW','MOCK_LOCATION_REJECTED','NO_OPEN_ATTENDANCE','ALREADY_CHECKED_IN','RATE_LIMITED']); const status = error.statusCode || (known.has(error.message) ? 403 : 500); res.status(status).json({ ok: false, error: status >= 500 ? 'SERVER_ERROR' : error.message }); }
+module.exports = { getAdmin, requireUser, requireAdmin, isOwner, isPrimaryAdmin, distanceMeters, baghdadDate, cleanText, rateLimit, safeAudit, sendError, handleCors };

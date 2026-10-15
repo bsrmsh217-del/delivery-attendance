@@ -1,14 +1,15 @@
-const { getAdmin, sendError, handleCors } = require('./_firebase');
+const { getAdmin, sendError, handleCors, rateLimit, cleanText } = require('./_firebase');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'METHOD_NOT_ALLOWED' });
   let createdUid = null;
   try {
+    rateLimit(req, 'register', 5, 600000);
     const { name, username, password, phone = '', employeeId = '', area = '', branch = '' } = req.body || {};
-    const normalized = String(username || '').trim().toLowerCase();
+    const safeName = cleanText(name, 100), normalized = String(username || '').trim().toLowerCase();
     const branches = ['المركز', 'الحسينية', 'طويريج', 'الحر'];
-    if (!String(name || '').trim() || !/^[a-z0-9_]{3,32}$/.test(normalized) || String(password || '').length < 8 || !branches.includes(String(branch).trim())) {
+    if (!safeName || !/^[a-z0-9_]{3,32}$/.test(normalized) || String(password || '').length < 8 || !branches.includes(String(branch).trim())) {
       return res.status(400).json({ ok: false, error: 'INVALID_REGISTRATION_DATA' });
     }
     const admin = getAdmin();
@@ -18,7 +19,7 @@ module.exports = async function handler(req, res) {
     if (lock.exists) return res.status(409).json({ ok: false, error: 'USERNAME_TAKEN' });
 
     const email = `${normalized}@deliveryattendance.app`;
-    const authUser = await admin.auth().createUser({ email, password: String(password), displayName: String(name).trim(), disabled: false });
+    const authUser = await admin.auth().createUser({ email, password: String(password), displayName: safeName, disabled: false });
     createdUid = authUser.uid;
     const now = admin.firestore.Timestamp.now();
     await db.runTransaction(async tx => {
@@ -26,13 +27,17 @@ module.exports = async function handler(req, res) {
       if (latestLock.exists) throw Object.assign(new Error('USERNAME_TAKEN'), { statusCode: 409 });
       tx.create(lockRef, { userId: authUser.uid, createdAt: now });
       tx.create(db.collection('users').doc(authUser.uid), {
-        authUid: authUser.uid, email, username: normalized, name: String(name).trim(),
-        phone: String(phone).trim(), employeeId: String(employeeId).trim(), area: String(area).trim(), branch: String(branch).trim(),
+        authUid: authUser.uid, email, username: normalized, name: safeName,
+        phone: cleanText(phone, 30), employeeId: cleanText(employeeId, 40), area: cleanText(area, 80), branch: String(branch).trim(),
         role: 'agent', status: 'pending', deviceId: null, deviceInfo: null,
         activeSessionId: null, hasAlert: false, createdAt: now
       });
     });
-    await db.collection('auditLogs').add({ action: 'register_request', actorId: authUser.uid, actorName: String(name).trim(), target: authUser.uid, details: normalized, createdAt: now });
+    try {
+      await db.collection('auditLogs').add({ action: 'register_request', actorId: authUser.uid, actorName: cleanText(name, 100), target: authUser.uid, details: normalized, createdAt: now });
+    } catch (auditError) {
+      console.error('registration audit write failed', auditError);
+    }
     res.status(201).json({ ok: true, status: 'pending' });
   } catch (error) {
     if (createdUid) {

@@ -49,7 +49,7 @@ service cloud.firestore {
 
     match /auditLogs/{logId} {
       allow read: if isOwner();
-      allow create: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
 
