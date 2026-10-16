@@ -44,6 +44,7 @@ function getApp() {
   let serviceAccount;
   try { serviceAccount = JSON.parse(raw); } catch (_) { throw new Error('FIREBASE_SERVICE_ACCOUNT is invalid JSON'); }
   if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) throw new Error('FIREBASE_SERVICE_ACCOUNT is incomplete');
+  serviceAccount.private_key = String(serviceAccount.private_key).replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
   return admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 }
 function getAdmin() { getApp(); return admin; }
