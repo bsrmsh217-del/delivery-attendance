@@ -107,7 +107,7 @@ tr:hover td{background:#f9fafb;}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
 .mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
 .mt{font-size:18px;font-weight:800;}
-.cb2{background:var(--bg);border:none;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:18px;}
+.cb2{background:var(--bg);border:1px solid var(--bdr);color:var(--txt);width:38px;height:38px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
 .dr{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--bdr);}
 .dr:last-child{border-bottom:none;}
 .dl{color:var(--mu);font-size:14px;}.dv{font-weight:700;font-size:14px;text-align:left;max-width:60%;}
@@ -136,12 +136,12 @@ html[data-theme=dark]{--bg:#101828;--card:#182230;--txt:#f2f4f7;--mu:#98a2b3;--b
 body{font-family:Tahoma,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5;}
 body:before{content:'';display:block;position:fixed;inset:0;pointer-events:none;border-top:3px solid var(--p);z-index:12000;}
 .hdr{background:var(--card);color:var(--txt);border-bottom:1px solid var(--bdr);box-shadow:none;padding:16px 20px;}
-.hdr h1{font-size:17px}.hsub{color:var(--mu);opacity:1}.ib{background:var(--bg);color:var(--txt);border:1px solid var(--bdr);border-radius:8px}.ib:hover{background:var(--pl)}
+.hdr h1{font-size:17px}.hsub{color:var(--mu);opacity:1}.ib{background:var(--bg);color:var(--txt);border:1px solid var(--bdr);border-radius:8px;width:auto;height:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:8px 12px;font-family:inherit;font-weight:700;cursor:pointer}.ib:hover{background:var(--pl)}.ib.danger{color:var(--d);border-color:#f2b8b5}.icon{width:19px;height:19px;display:inline-block;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.icon-fill{fill:currentColor;stroke:none}.btn-label{white-space:nowrap}
 .card,.sc,.agr{border:1px solid var(--bdr);box-shadow:var(--sh);border-radius:10px}.card{padding:18px}.btn{border-radius:8px;min-height:44px;transition:background-color .16s,border-color .16s,transform .16s}.btn:active{transform:scale(.98)}
 .bp{background:var(--p)}.bp:hover{background:var(--pd)}.bs{background:var(--s)}.bd{background:var(--d)}.bo{border-color:var(--p)}
 input,select{border:1px solid var(--bdr);border-radius:8px;background:var(--card);color:var(--txt)}input:focus,select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(20,86,195,.14)}
 #loginScreen{background:var(--bg);padding:24px 16px;overflow:auto}.lbox{max-width:430px}.llogo{margin-bottom:22px}.lwrap{background:var(--p);border-radius:14px;box-shadow:none;width:64px;height:64px;font-size:0}.lwrap:after{content:'DA';font-size:19px;font-weight:800;letter-spacing:1px}.llogo h2{font-size:24px;letter-spacing:-.5px}.sec-bdg{border-radius:8px;background:var(--pl);color:var(--pd)}.tbar{background:transparent;border-bottom:1px solid var(--bdr);border-radius:0;padding:0}.tab{border-radius:0;padding:12px 8px}.tab.active{background:transparent;color:var(--p);box-shadow:inset 0 -2px 0 var(--p)}
-.anav{background:var(--card);border-bottom:1px solid var(--bdr);padding:8px 14px}.nb{border-radius:8px;background:transparent}.nb.active{background:var(--p)}.sgrid{grid-template-columns:repeat(4,1fr)}.sn{font-size:28px}.lpill,.tag,.sec-bdg,.rv{border-radius:8px}.cbtn{width:180px;height:68px;border-radius:8px;box-shadow:none;margin:18px auto}.cbtn.ci{background:var(--s)}.cbtn.co{background:var(--d)}.bico{font-size:24px}.blbl{font-size:15px}.cbtn:hover:not(:disabled){transform:none;filter:brightness(.96)}
+.anav{background:var(--card);border-bottom:1px solid var(--bdr);padding:8px 14px}.nb{border-radius:8px;background:transparent}.nb.active{background:var(--p)}.sgrid{grid-template-columns:repeat(4,1fr)}.sn{font-size:28px}.lpill,.tag,.sec-bdg,.rv{border-radius:8px}.cbtn{width:210px;height:68px;border-radius:8px;box-shadow:none;margin:18px auto;display:flex;align-items:center;justify-content:center;gap:9px}.cbtn.ci{background:var(--s)}.cbtn.co{background:var(--d)}.bico{display:inline-flex}.bico .icon{width:24px;height:24px}.cbtn.ci .bico-out,.cbtn.co .bico-in{display:none}.blbl{font-size:15px}.cbtn:hover:not(:disabled){transform:none;filter:brightness(.96)}
 #toast{border-radius:8px;box-shadow:0 4px 16px rgba(16,24,40,.18)}.modal{background:var(--card);border:1px solid var(--bdr);border-radius:16px 16px 0 0}.upcard{background:var(--pl);border:1px solid #9bbcf0}.force-update-box{background:var(--card);border-radius:12px}.mapbox{border:1px solid var(--bdr)}
 .login-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;font-size:11px;color:var(--mu)}.theme-toggle{background:var(--card);border:1px solid var(--bdr);color:var(--txt);border-radius:8px;padding:8px 10px;cursor:pointer;font-family:inherit}.login-help{margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px}.login-help details{padding:10px 0;border-bottom:1px solid var(--bdr)}.login-help summary{cursor:pointer;font-weight:700}.login-help p{color:var(--mu);font-size:13px;margin-top:7px}.skip-link{position:fixed;top:-60px;right:16px;background:var(--p);color:#fff;padding:10px 14px;border-radius:0 0 8px 8px;z-index:13000}.skip-link:focus{top:0}.cookie-banner{position:fixed;bottom:16px;right:16px;left:16px;max-width:560px;margin:auto;z-index:11500;background:var(--card);border:1px solid var(--bdr);padding:12px 14px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--sh);font-size:13px}.cookie-banner .btn{min-height:36px;padding:7px 14px}.top-btn{position:fixed;bottom:22px;left:18px;z-index:900;background:var(--p);color:#fff;border:0;border-radius:8px;padding:9px 12px;opacity:0;pointer-events:none;transition:opacity .16s}.top-btn.visible{opacity:1;pointer-events:auto}#scrollProgress{position:fixed;top:0;right:0;height:3px;background:var(--p);width:0;z-index:13001}
 .password-row{display:flex;gap:8px;align-items:stretch}.password-row input{flex:1}.password-toggle{background:var(--bg);border:1px solid var(--bdr);color:var(--txt);border-radius:8px;padding:0 12px;cursor:pointer;font-family:inherit;font-weight:700}
@@ -206,8 +206,8 @@ html[data-theme=dark] input,html[data-theme=dark] select{color-scheme:dark}html[
 <div class="hdr">
   <div><div class="hsub">مرحباً،</div><h1 id="agName">المندوب</h1></div>
   <div class="hact">
-    <button class="ib" onclick="showAHist()"></button>
-    <button class="ib" onclick="doLogout()"></button>
+    <button class="ib" type="button" onclick="showAHist()" aria-label="سجل الحضور" title="سجل الحضور"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 7h6M9 11h6M9 15h4"></path></svg><span class="btn-label">السجل</span></button>
+    <button class="ib danger" type="button" onclick="doLogout()" aria-label="تسجيل الخروج" title="تسجيل الخروج"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg><span class="btn-label">تسجيل الخروج</span></button>
   </div>
 </div>
 <div style="flex:1;overflow-y:auto;padding-bottom:24px">
@@ -217,9 +217,7 @@ html[data-theme=dark] input,html[data-theme=dark] select{color-scheme:dark}html[
     <div><div class="lpill chk" id="lpill"> <span id="ltxt">جاري تحديد الموقع...</span></div></div>
     <button class="btn bp gps-request" id="gpsRequestBtn" onclick="requestGPS()"> تفعيل GPS للسماح بالحضور</button>
     <div style="font-size:13px;color:var(--mu);min-height:18px;margin-top:4px" id="dstxt"></div>
-    <button class="cbtn ci" id="mainBtn" onclick="doCheck()" disabled>
-      <span class="bico"></span><span class="blbl" id="mainLbl">تسجيل دخول</span>
-    </button>
+    <button class="cbtn ci" id="mainBtn" onclick="doCheck()" disabled aria-label="تسجيل حضور أو خروج"><span class="bico"><svg class="icon bico-in" aria-hidden="true" viewBox="0 0 24 24"><path d="m15 17 5-5-5-5"></path><path d="M20 12H4"></path><path d="M4 4v16"></path></svg><svg class="icon bico-out" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 17-5-5 5-5"></path><path d="M4 12h16"></path><path d="M20 4v16"></path></svg></span><span class="blbl" id="mainLbl">تسجيل دخول</span></button>
     <div id="sbox" style="display:none" class="sbox">
       <div style="font-size:13px;color:#047857;font-weight:600">وقت الدخول</div>
       <div class="cit" id="ciT"></div>
@@ -232,7 +230,7 @@ html[data-theme=dark] input,html[data-theme=dark] select{color-scheme:dark}html[
 
 <div class="ov" id="ahModal">
   <div class="modal">
-    <div class="mhdr"><div class="mt"> سجل حضوري</div><button class="cb2" onclick="closeM('ahModal')"></button></div>
+    <div class="mhdr"><div class="mt"> سجل حضوري</div><button class="cb2" type="button" onclick="closeM('ahModal')" aria-label="إغلاق سجل الحضور" title="إغلاق"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
     <div id="ahBody"><div class="empty"><div class="ei"></div>لا يوجد سجل</div></div>
   </div>
 </div>
@@ -242,8 +240,8 @@ html[data-theme=dark] input,html[data-theme=dark] select{color-scheme:dark}html[
 <div class="hdr">
   <div><div class="hsub">لوحة التحكم</div><h1><span id="adminName">الأدمن</span> </h1></div>
   <div class="hact">
-    <button class="ib" id="nBtn" onclick="gotoSec('notifications')"><span class="bdg" id="nBdg" style="display:none">0</span></button>
-    <button class="ib" onclick="doLogout()"></button>
+    <button class="ib" id="nBtn" type="button" onclick="gotoSec('notifications')" aria-label="الإشعارات" title="الإشعارات"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg><span class="btn-label">الإشعارات</span><span class="bdg" id="nBdg">0</span></button>
+    <button class="ib danger" type="button" onclick="doLogout()" aria-label="تسجيل الخروج" title="تسجيل الخروج"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg><span class="btn-label">تسجيل الخروج</span></button>
   </div>
 </div>
 <div class="anav">
@@ -318,8 +316,8 @@ html[data-theme=dark] input,html[data-theme=dark] select{color-scheme:dark}html[
  <div id="sec_systemstatus" class="asec"><div class="card"><div class="ct"> حالة النظام - Owner فقط</div><div class="ib2">فحص اتصال Firebase وAPI وعدد الحسابات والحضور المفتوح وتطابق إصدار النشر.</div><div id="systemStatusBody"><div class="empty">اضغط فحص الحالة</div></div><button class="btn bp bb" onclick="loadSystemStatus()"> فحص الحالة الآن</button></div></div>
 </div>
 
-<div class="ov" id="agModal"><div class="modal"><div class="mhdr"><div class="mt"> تفاصيل المندوب</div><button class="cb2" onclick="closeM('agModal')"></button></div><div id="agMBody"></div></div></div>
-<div class="ov" id="attModal"><div class="modal"><div class="mhdr"><div class="mt"> تفاصيل الحضور</div><button class="cb2" onclick="closeM('attModal')"></button></div><div id="attMBody"></div></div></div>
+<div class="ov" id="agModal"><div class="modal"><div class="mhdr"><div class="mt"> تفاصيل المندوب</div><button class="cb2" type="button" onclick="closeM('agModal')" aria-label="إغلاق التفاصيل" title="إغلاق"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div><div id="agMBody"></div></div></div>
+<div class="ov" id="attModal"><div class="modal"><div class="mhdr"><div class="mt"> تفاصيل الحضور</div><button class="cb2" type="button" onclick="closeM('attModal')" aria-label="إغلاق تفاصيل الحضور" title="إغلاق"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div><div id="attMBody"></div></div></div>
 <div id="toast"></div>
 
 <script type="module">
@@ -333,7 +331,7 @@ window.$=(id)=>document.getElementById(id);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.55', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.56', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -543,7 +541,7 @@ function subN(){
   nU=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc')),sn=>{
     const ns=sn.docs.map(d=>({id:d.id,...d.data()}));renderN(ns);
     const visible=CU?.role==='admin'&&!(isRasimPrimary()||CU.adminLevel==='primary')?ns.filter(n=>n.branch===CU.branch):ns;const u=visible.filter(n=>!n.read&&n.type==='alert').length;
-    $('nBdg').style.display=u>0?'flex':'none';$('nBdg').textContent=u;$('s3').textContent=u;
+    $('nBdg').style.display='inline-flex';$('nBdg').textContent=u;$('s3').textContent=u;
   });
 }
 

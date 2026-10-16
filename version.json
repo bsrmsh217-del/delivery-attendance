@@ -1,8 +1,8 @@
 {
-  "version": "2.0.55",
-  "versionCode": 75,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.55.apk",
-  "notes": "إصلاح أزرار الواجهة وحقول الإدارة داخل الويب وتطبيق Android.",
+  "version": "2.0.56",
+  "versionCode": 76,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.56.apk",
+  "notes": "إضافة نصوص وأيقونات SVG واضحة لأزرار الخروج والإشعارات والحضور والنوافذ.",
   "required": false,
-  "publishedAt": "2026-10-16T18:45:00+03:00"
+  "publishedAt": "2026-10-17T00:05:00+03:00"
 }
