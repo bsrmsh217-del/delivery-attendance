@@ -6,7 +6,7 @@
 
 الموقع الإنتاجي: https://delivery-attendance.vercel.app/
 
-رابط APK الحالي: https://delivery-attendance.vercel.app/delivery-attendance-v2.0.54.apk
+رابط APK الحالي: https://delivery-attendance.vercel.app/delivery-attendance-v2.0.55.apk
 
 ملف الإصدار: https://delivery-attendance.vercel.app/version.json
 

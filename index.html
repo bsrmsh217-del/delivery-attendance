@@ -329,10 +329,11 @@ import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,delete
 
 const FC={apiKey:"AIzaSyD-4qMzlL0BhvuXdZKX3uAU1Ip_zMCaQCg",authDomain:"delivery-attendance-20663.firebaseapp.com",projectId:"delivery-attendance-20663",storageBucket:"delivery-attendance-20663.firebasestorage.app",messagingSenderId:"235545157551",appId:"1:235545157551:web:74b49e281b6b5f04c1195a"};
 const app=initializeApp(FC),db=getFirestore(app),auth=getAuth(app);
+window.$=(id)=>document.getElementById(id);
 // The Android APK loads this file from Capacitor's local origin, so relative /api paths would stay inside the APK.
 // Keep the website and APK on the same production API and Firestore project.
 const API_ORIGIN='https://delivery-attendance.vercel.app';
-const APP_VERSION='2.0.54', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
+const APP_VERSION='2.0.55', UPDATE_MANIFEST=`${API_ORIGIN}/version.json`;
 const IS_NATIVE=!!(window.Capacitor?.isNativePlatform?.() || (window.Capacitor?.getPlatform?.() && window.Capacitor.getPlatform()!=='web'));
 let trustedDid=null,insideSince=null,stabilityTimer=null,securityState={mockLocation:false,developerOptions:false,native:false};
 
@@ -374,6 +375,7 @@ function applyTheme(theme){document.documentElement.dataset.theme=theme;localSto
 function toggleTheme(){applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');}
 function togglePassword(id,button){const input=document.getElementById(id);if(!input)return;const visible=input.type==='text';input.type=visible?'password':'text';button.textContent=visible?'إظهار':'إخفاء';}
 function acceptCookies(){localStorage.setItem('cookie_notice','1');const b=document.getElementById('cookieBanner');if(b)b.remove();}
+window.toggleTheme=toggleTheme;window.togglePassword=togglePassword;window.acceptCookies=acceptCookies;
 function trackCampaign(){const params=new URLSearchParams(location.search);const campaign={};['utm_source','utm_medium','utm_campaign'].forEach(k=>{if(params.get(k))campaign[k]=params.get(k)});if(Object.keys(campaign).length)localStorage.setItem('campaign',JSON.stringify(campaign));}
 (function bootUi(){applyTheme(localStorage.getItem('theme')||'light');trackCampaign();if(localStorage.getItem('cookie_notice'))document.getElementById('cookieBanner')?.remove();window.addEventListener('scroll',()=>{const max=document.documentElement.scrollHeight-innerHeight;document.getElementById('scrollProgress').style.width=(max>0?scrollY/max*100:0)+'%';document.getElementById('topBtn').classList.toggle('visible',scrollY>420);},{passive:true});})();
 async function init(){

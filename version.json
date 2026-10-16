@@ -1,8 +1,8 @@
 {
-  "version": "2.0.54",
-  "versionCode": 74,
-  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.54.apk",
-  "notes": "تحسين التصميم والوصول والحماية ومعالجة أخطاء الدخول والحضور.",
+  "version": "2.0.55",
+  "versionCode": 75,
+  "apkUrl": "https://delivery-attendance.vercel.app/delivery-attendance-v2.0.55.apk",
+  "notes": "إصلاح أزرار الواجهة وحقول الإدارة داخل الويب وتطبيق Android.",
   "required": false,
   "publishedAt": "2026-10-16T18:45:00+03:00"
 }
