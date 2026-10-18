@@ -247,7 +247,7 @@ window.gotoSec=name=>{
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   $('sec_'+name).classList.add('active');
   const navMap={dashboard:'navDashboard',attendance:'navAttendance',agents:'navAgents',notifications:'navNotifications',location:'navLocation',management:'navManagement',adminaccounts:'navAdminAccounts',adminlogs:'ownerAuditNav'};if($(navMap[name]))$(navMap[name]).classList.add('active');
-  if(name==='adminlogs'&&CU.role==='owner')loadOwnerAudit();if(name==='adminaccounts'&&(CU.role==='owner'||CU.adminLevel==='primary'||isRasimPrimary())){loadAllU();loadAdminAccounts();}if(name==='notifications'){subN();markNR();}if(name==='agents'){loadAllU();renderAgs();}if(name==='management')loadManagement();if(name==='location'){loadBranchMaps();setTimeout(()=>{Object.values(branchMapState).forEach(x=>{x.map.invalidateSize(true);x.map.setView([x.lat,x.lng],15,{animate:false});});},250);
+  if(name==='adminlogs'&&CU.role==='owner')loadOwnerAudit();if(name==='adminaccounts'&&(CU.role==='owner'||CU.adminLevel==='primary'||isRasimPrimary())){loadAllU();loadAdminAccounts();}if(name==='notifications'){subN();markNR();}if(name==='agents'){loadAllU();renderAgs();}if(name==='management')loadManagement();if(name==='location'){loadBranchMaps();setTimeout(()=>{Object.values(branchMapState).forEach(x=>{x.map.invalidateSize(true);x.map.setView([x.lat,x.lng],15,{animate:false});});},250);}
 };
 
 window.filterAtt=()=>{
